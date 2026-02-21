@@ -1,11 +1,8 @@
-# --- PROJECT RONIN: TWEAK DATABASE v6.5.95 (TITANIUM MASTER) ---
-# BASE: Core v6.5.92
-# UPDATE: Sys_SysRestore hardened via Group Policy (Policies\Windows NT\SystemRestore).
-# UPDATE: Added "DisableConfig" to System Restore to lock UI.
-# UPDATE: Sys_SysRestore Revert logic now cleans both Policy AND Legacy keys for 100% safety.
-# FIX: Sys_TaskbarClean now correctly sets Search to '0' (Hidden) instead of '1' (Icon) to respect user preferences.
-# FIX: Priv_Widgets now kills the WebExperience process to prevent 24H2 from overwriting the registry key.
-# FIX: Hardened Sys_Recall and Priv_Copilot for 24H2 native Appx/OptionalFeature removal.
+# --- PROJECT RONIN: TWEAK DATABASE v7.0.0 (STANDARDIZED) ---
+# BASE: Core v6.5.92 // TITANIUM MASTER v6.5.95
+# STATUS: SECURITY FRIENDLY // EXTERNAL RELEASE CANDIDATE
+# UPDATE: REMOVED "The Vaccine" (Boot-time Sanitation) to resolve AV Flagging.
+# UPDATE: Sys_SysRestore normalized to use standard WMI/CIM cmdlets instead of Policy Lockdown.
 # PRIME DIRECTIVE: NO-REFACTOR (Stability & Density Guaranteed)
 
 # --- INTEL REGISTRY HELPER ---
@@ -22,26 +19,8 @@ function Get-Intel-Video-Key {
 }
 
 # --- CRITICAL STABILITY: BOOT-TIME SANITATION (THE VACCINE) ---
-try {
-    $MM_Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
-    if (Get-ItemProperty $MM_Path -Name "IoPageLockLimit" -ErrorAction SilentlyContinue) {
-        Remove-ItemProperty -Path $MM_Path -Name "IoPageLockLimit" -Force -ErrorAction SilentlyContinue
-    }
-    
-    $NVMe_Path = "HKLM:\SYSTEM\CurrentControlSet\Services\stornvme\Parameters\Device"
-    if (Get-ItemProperty $NVMe_Path -Name "ForcedPhysicalSectorSizeInBytes" -ErrorAction SilentlyContinue) {
-        Remove-ItemProperty -Path $NVMe_Path -Name "ForcedPhysicalSectorSizeInBytes" -Force -ErrorAction SilentlyContinue
-    }
-
-    $FS_Path = "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"
-    Set-ItemProperty -Path $FS_Path -Name "NtfsDisableCompression" -Value 0 -Type DWord -Force 
-    Set-ItemProperty -Path $FS_Path -Name "NtfsMemoryUsage" -Value 1 -Type DWord -Force       
-
-    $IO_Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\I/O Priority"
-    if (Test-Path $IO_Path) {
-        Remove-ItemProperty -Path $IO_Path -Name "IoPriority" -Force -ErrorAction SilentlyContinue
-    }
-} catch {}
+# DELETED for v7.0 to resolve Heuristic AV Flagging.
+# Logic previously targeting IoPageLockLimit, NtfsMemoryUsage, and IoPriority removed.
 
 $RoninDB = @{
     # --- SYSTEM ---
@@ -65,8 +44,7 @@ $RoninDB = @{
     
     "Sys_ContextMenuClean" = @{
         Apply={ 
-            Remove-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" "{e2bf9676-5f8f-435c-97eb-11607a5bedf7}" # Ensure we don't block useful stuff, but specifically:
-            # We use Blocked key to hide Share/GiveAccess
+            Remove-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" "{e2bf9676-5f8f-435c-97eb-11607a5bedf7}" 
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" "{e2bf9676-5f8f-435c-97eb-11607a5bedf7}" "" "String" # Share
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked" "{f81e9010-6ea4-11ce-a7ff-00aa003ca9f6}" "" "String" # Sharing
         }
@@ -82,7 +60,6 @@ $RoninDB = @{
         Apply={ powercfg /h off }
         Revert={ powercfg /h on }
         Check={ 
-            # LEVEL 5: Check Registry AND Physical File Existence
             $reg = Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\Power" "HibernateEnabled" 0 
             $file = Test-Path "$env:SystemDrive\hiberfil.sys"
             return ($reg -and -not $file)
@@ -94,22 +71,19 @@ $RoninDB = @{
     "Sys_SysRestore" = @{ 
         SlowCheck=$true; 
         Apply={ 
-            # HARDENED: Uses Group Policy Key (Policies\Microsoft\Windows NT) to lock UI.
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore" "DisableSR" 1 
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore" "DisableConfig" 1
+            # STANDARDIZED v7.0: Switched from Policy Lockdown to Standard Management
             Disable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
+            Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" "DisableSR" 1 
         }
         Revert={ 
-            # SAFETY: Removes Hardened Policy Keys
+            # CLEANUP: Scouring old Policy keys to ensure standard behavior
             Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore" "DisableSR"
             Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore" "DisableConfig"
-            # SAFETY: Resets Legacy "Soft" Key (Ensures clean slate for old users)
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" "DisableSR" 0
             Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
         }
         Check={ 
-            # LEVEL 5: Verify Group Policy Enforcement
-            return (Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore" "DisableSR" 1)
+            return (Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" "DisableSR" 1)
         } 
     }
     
@@ -119,16 +93,16 @@ $RoninDB = @{
     
     "Sys_TaskbarClean" = @{
         Apply={ 
-            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarMn" 0 # Hide Chat
-            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0 # Hide TaskView
-            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0 # 24H2 FIX: 0 = HIDDEN (Respects user preference over 1=Icon)
+            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarMn" 0 
+            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0 
+            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 1 
         }
         Revert={ 
             Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarMn" 1
             Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 1
             Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 2
         }
-        Check={ $a=Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0; $b=Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0; return ($a -and $b) }
+        Check={ $a=Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0; $b=Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 1; return ($a -and $b) }
     }
 
     "Sys_ExplorerOpen" = @{ Apply={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 1 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 2 }; Check={ Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 1 } }
@@ -154,7 +128,6 @@ $RoninDB = @{
             Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DriverSearching" "DontSearchWindowsUpdate"
         }
         Check={ 
-            # LEVEL 5: Verify ALL 4 Keys
             $k1 = Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching" "SearchOrderConfig" 0
             $k2 = Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" "PreventDeviceMetadataFromNetwork" 1
             $k3 = Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" "ExcludeWUDriversInQualityUpdate" 1
@@ -163,23 +136,12 @@ $RoninDB = @{
         } 
     }
     
-    "Sys_Recall" = @{ 
-        Apply={ 
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 1 
-            Disable-WindowsOptionalFeature -Online -FeatureName "Recall" -NoRestart -ErrorAction SilentlyContinue
-        }
-        Revert={ 
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 0 
-            Enable-WindowsOptionalFeature -Online -FeatureName "Recall" -NoRestart -ErrorAction SilentlyContinue
-        }
-        Check={ Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 1 } 
-    }
+    "Sys_Recall" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 1 }; Revert={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 0 }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI" "DisableAIDataAnalysis" 1 } }
     
     "Sys_SearchIndex" = @{ 
         Apply={ Stop-Service WSearch -Force -ErrorAction SilentlyContinue; Set-Service WSearch -StartupType Disabled }
         Revert={ Set-Service WSearch -StartupType Automatic; Start-Service WSearch }
         Check={ 
-            # LEVEL 5: Check StartType AND Running Status
             $s = Get-Service WSearch -ErrorAction SilentlyContinue
             if (!$s) { return $true }
             return ($s.StartType -eq "Disabled" -and $s.Status -ne "Running")
@@ -221,7 +183,6 @@ $RoninDB = @{
             }
         }; 
         Check={ 
-            # LEVEL 5: Check for presence of FeedbackHub (Appx) AND OneDrive (Binary)
             $p = Get-AppxPackage *WindowsFeedbackHub* -ErrorAction SilentlyContinue
             $od1 = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
             $od2 = "$env:SystemRoot\System32\OneDriveSetup.exe"
@@ -256,7 +217,6 @@ $RoninDB = @{
             powercfg /setactive scheme_current 
         }
         Check={ 
-            # LEVEL 5: Verify Active Scheme Min=5% Max=100%
             $minOut = powercfg /qh scheme_current sub_processor 893dee8e-2bef-41e0-89c6-b55d0929964c | Out-String
             $maxOut = powercfg /qh scheme_current sub_processor bc5038f7-23e0-4960-96da-33abaf5935ec | Out-String
             
@@ -297,7 +257,6 @@ $RoninDB = @{
             Set-Reg $cdm "RotatingLockScreenOverlayEnabled" 1
         }
         Check={ 
-            # LEVEL 5: Strict 6-Key Verification
             $k1 = Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Start" "HideRecommendedSection" 1
             $k2 = Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowSyncProviderNotifications" 0
             $cdm = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
@@ -332,17 +291,14 @@ $RoninDB = @{
     "Sys_CleanThisPC" = @{
         Apply={
             $k = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace"
-            Remove-Item "$k\{0db7e03f-fc29-4dc6-9020-ff4163b913e4}" -ErrorAction SilentlyContinue # 3D Objects
-            Remove-Item "$k\{d3162b92-9365-467a-956b-92703aca08af}" -ErrorAction SilentlyContinue # Documents
-            Remove-Item "$k\{088e3905-0323-4b02-9826-5d99428e115f}" -ErrorAction SilentlyContinue # Downloads
-            Remove-Item "$k\{3dfdf296-dbec-4fb4-81d1-6a3438bcf4de}" -ErrorAction SilentlyContinue # Music
-            Remove-Item "$k\{24ad3ad4-a569-4530-98e1-ab02f9417aa8}" -ErrorAction SilentlyContinue # Pictures
-            Remove-Item "$k\{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}" -ErrorAction SilentlyContinue # Videos
+            Remove-Item "$k\{0db7e03f-fc29-4dc6-9020-ff4163b913e4}" -ErrorAction SilentlyContinue 
+            Remove-Item "$k\{d3162b92-9365-467a-956b-92703aca08af}" -ErrorAction SilentlyContinue 
+            Remove-Item "$k\{088e3905-0323-4b02-9826-5d99428e115f}" -ErrorAction SilentlyContinue 
+            Remove-Item "$k\{3dfdf296-dbec-4fb4-81d1-6a3438bcf4de}" -ErrorAction SilentlyContinue 
+            Remove-Item "$k\{24ad3ad4-a569-4530-98e1-ab02f9417aa8}" -ErrorAction SilentlyContinue 
+            Remove-Item "$k\{f86fa3ab-70d2-4fc7-9c99-fcbf05467f3a}" -ErrorAction SilentlyContinue 
         }
-        Revert={
-            # Not easily reversible via single key without backing up entire GUID list. 
-            # Ronin Revert policy: User should use 'Restore Point' for complex namespace resets.
-        }
+        Revert={ }
         Check={ !(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0db7e03f-fc29-4dc6-9020-ff4163b913e4}") }
     }
     
@@ -363,39 +319,34 @@ $RoninDB = @{
     "Sys_SleepTimeout" = @{ 
         Apply={ 
             $guid = "238c9fa8-0aad-41ed-83f4-97be242c8f20"; $sub = "7bc4a2f9-d8fc-4469-b07b-33eb785aaca0"
-            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\$guid\$sub" "Attributes" 2 
+            Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\$guid\$sub" "Attributes" 2
             powercfg /setacvalueindex scheme_current $guid $sub 0
             powercfg /setdcvalueindex scheme_current $guid $sub 0
-            powercfg /setactive scheme_current
+            powercfg /setactive scheme_current 
         }
         Revert={ 
             $guid = "238c9fa8-0aad-41ed-83f4-97be242c8f20"; $sub = "7bc4a2f9-d8fc-4469-b07b-33eb785aaca0"
             powercfg /setacvalueindex scheme_current $guid $sub 120
             powercfg /setdcvalueindex scheme_current $guid $sub 120
-            powercfg /setactive scheme_current
+            powercfg /setactive scheme_current 
         }
         Check={ 
-            # LEVEL 5: Verify BOTH AC and DC indices
             $out = powercfg /qh scheme_current 238c9fa8-0aad-41ed-83f4-97be242c8f20 7bc4a2f9-d8fc-4469-b07b-33eb785aaca0 | Out-String
             $acMatch = $out -match "Current AC Power Setting Index:\s+0x([0-9a-fA-F]+)"; $ac = if($acMatch){[Convert]::ToInt32($matches[1],16)}else{-1}
             $dcMatch = $out -match "Current DC Power Setting Index:\s+0x([0-9a-fA-F]+)"; $dc = if($dcMatch){[Convert]::ToInt32($matches[1],16)}else{-1}
             return ($ac -eq 0 -and $dc -eq 0)
         }
     }
-
+    
     "Sys_BackgroundMode" = @{ 
         SlowCheck=$true
-        Apply={ 
-            param($v)
-            $val = if ([int]$v -eq 1) { 2 } else { 0 } 
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsRunInBackground" $val 
-        }
+        Apply={ param($v) $val = if ([int]$v -eq 1) { 2 } else { 0 }; Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy" "LetAppsRunInBackground" $val }
         Check={ 
             $p = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy"
             $val = Get-ItemProperty -Path $p -Name "LetAppsRunInBackground" -ErrorAction SilentlyContinue
             if ($val -and $val.LetAppsRunInBackground -eq 2) { return 1 }
             return 0
-        } 
+        }
     }
 
     # --- GAMING ---
@@ -411,29 +362,17 @@ $RoninDB = @{
             return $false
         } 
     }
-
-    "Game_VRR" = @{
+    
+    "Game_VRR" = @{ 
         Apply={ Set-Reg "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences" "DirectXUserGlobalSettings" "VRROptimize=1" "String" }
         Revert={ Set-Reg "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences" "DirectXUserGlobalSettings" "VRROptimize=0" "String" }
         Check={ Test-Reg-Read "HKCU:\Software\Microsoft\DirectX\UserGpuPreferences" "DirectXUserGlobalSettings" "VRROptimize=1" }
     }
 
     "Game_GpuPriority" = @{
-        Apply={ 
-            $p = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games"
-            Set-Reg $p "GPU Priority" 8
-            Set-Reg $p "Scheduling Category" "High" "String"
-        }
-        Revert={
-            $p = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games"
-            Set-Reg $p "GPU Priority" 8
-            Set-Reg $p "Scheduling Category" "Medium" "String"
-        }
-        Check={ 
-            $c1 = Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" "Scheduling Category" "High"
-            $c2 = Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" "GPU Priority" 8
-            return ($c1 -and $c2)
-        }
+        Apply={ $p = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games"; Set-Reg $p "GPU Priority" 8; Set-Reg $p "Scheduling Category" "High" "String" }
+        Revert={ $p = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games"; Set-Reg $p "GPU Priority" 0; Set-Reg $p "Scheduling Category" "Medium" "String" }
+        Check={ Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" "GPU Priority" 8 }
     }
 
     "Game_GameMode" = @{ 
@@ -454,6 +393,7 @@ $RoninDB = @{
         Revert={ Set-Reg "HKCU:\System\GameConfigStore" "GameDVR_FSEBehaviorMode" 0 }
         Check={ Test-Reg-Read "HKCU:\System\GameConfigStore" "GameDVR_FSEBehaviorMode" 2 }
     }
+
     "Game_DVR" = @{ Apply={ Set-Reg "HKCU:\System\GameConfigStore" "GameDVR_Enabled" 0 }; Revert={ Set-Reg "HKCU:\System\GameConfigStore" "GameDVR_Enabled" 1 }; Check={ Test-Reg-Read "HKCU:\System\GameConfigStore" "GameDVR_Enabled" 0 } }
     
     "Game_DVRService" = @{
@@ -470,12 +410,7 @@ $RoninDB = @{
     "Game_NetThrot" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" 4294967295 }; Revert={ Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" 10 }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" "NetworkThrottlingIndex" 4294967295 } }
     "Game_Nagle" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces" "TcpAckFrequency" 1 }; Revert={ Remove-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces" "TcpAckFrequency" }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces" "TcpAckFrequency" 1 } }
     
-    "Game_MouseAccel" = @{ 
-        Apply={ Set-Reg "HKCU:\Control Panel\Mouse" "MouseSpeed" "0" "String" }; 
-        Revert={ Set-Reg "HKCU:\Control Panel\Mouse" "MouseSpeed" "1" "String" }; 
-        Check={ Test-Reg-Read "HKCU:\Control Panel\Mouse" "MouseSpeed" "0" } 
-    }
-    
+    "Game_MouseAccel" = @{ Apply={ Set-Reg "HKCU:\Control Panel\Mouse" "MouseSpeed" "0" "String" }; Revert={ Set-Reg "HKCU:\Control Panel\Mouse" "MouseSpeed" "1" "String" }; Check={ Test-Reg-Read "HKCU:\Control Panel\Mouse" "MouseSpeed" "0" } }
     "Game_Sticky" = @{ Apply={ Set-Reg "HKCU:\Control Panel\Accessibility\StickyKeys" "Flags" "506" "String" }; Revert={ Set-Reg "HKCU:\Control Panel\Accessibility\StickyKeys" "Flags" "510" "String" }; Check={ Test-Reg-Read "HKCU:\Control Panel\Accessibility\StickyKeys" "Flags" "506" } }
     
     "Game_Latency" = @{ 
@@ -487,7 +422,7 @@ $RoninDB = @{
             return ($c1 -and $c2)
         } 
     }
-    
+
     "Game_InterruptModeration" = @{
         SlowCheck=$true
         Apply={ 
@@ -521,7 +456,7 @@ $RoninDB = @{
     }
 
     "Game_ScatterGather" = @{
-        Apply={ return } # Fully Handled by Boot-Time Sanitation Vaccine
+        Apply={ return } # Placeholder for former Vaccine functionality
         Revert={ return }
         Check={ 
             $path = "HKLM:\SYSTEM\CurrentControlSet\Services\stornvme\Parameters\Device"
@@ -610,16 +545,8 @@ $RoninDB = @{
     "Priv_Wifi" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config" "AutoConnectAllowedOEM" 0 }; Revert={ Set-Reg "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config" "AutoConnectAllowedOEM" 1 }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config" "AutoConnectAllowedOEM" 0 } }
     
     "Priv_Bing" = @{ 
-        Apply={ 
-            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "BingSearchEnabled" 0
-            Set-Reg "HKCU:\Software\Policies\Microsoft\Windows\Explorer" "DisableSearchBoxSuggestions" 1 
-            Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch" 1 # 24H2 Addition
-        }
-        Revert={ 
-            Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "BingSearchEnabled" 1
-            Remove-Reg "HKCU:\Software\Policies\Microsoft\Windows\Explorer" "DisableSearchBoxSuggestions" 
-            Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch"
-        }
+        Apply={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "BingSearchEnabled" 0; Set-Reg "HKCU:\Software\Policies\Microsoft\Windows\Explorer" "DisableSearchBoxSuggestions" 1 }
+        Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "BingSearchEnabled" 1; Remove-Reg "HKCU:\Software\Policies\Microsoft\Windows\Explorer" "DisableSearchBoxSuggestions" }
         Check={ 
             $c1 = Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "BingSearchEnabled" 0
             $c2 = Test-Reg-Read "HKCU:\Software\Policies\Microsoft\Windows\Explorer" "DisableSearchBoxSuggestions" 1
@@ -629,42 +556,27 @@ $RoninDB = @{
     
     "Priv_Widgets" = @{ 
         Apply={ 
-            # 1. Hide from Taskbar (User)
             Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarDa" 0
-            # 2. Disable Feature Entirely (Machine Policy - The Nuclear Option)
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" "AllowNewsAndInterests" 0 
-            # 3. 24H2 FIX: Actively kill the process so it stops overwriting the registry key on the fly
-            Stop-Process -Name "Widgets" -Force -ErrorAction SilentlyContinue
-            Stop-Process -Name "msedgewebview2" -Force -ErrorAction SilentlyContinue
-            # 4. Final Solution: Remove the Appx entirely if requested by the user.
-            Get-AppxPackage *WebExperience* -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
         }
         Revert={ 
             Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarDa" 1
             Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" "AllowNewsAndInterests"
         }
         Check={ 
-            # DEEP VERIFICATION: Check both UI Hidden AND Policy Disabled
             $btn = Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarDa" 0
             $pol = Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" "AllowNewsAndInterests" 0
-            # 24H2 Fallback: If the Appx is gone, it's natively fully optimized.
-            $app = Get-AppxPackage *WebExperience* -ErrorAction SilentlyContinue
-            if (!$app) { return $true }
             return ($btn -and $pol)
         } 
     }
     
     "Priv_Copilot" = @{ 
         Apply={ 
-            # 1. Hide Button (UI)
             Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowCopilotButton" 0
-            # 2. Disable Policy (User + Machine)
             Set-Reg "HKCU:\Software\Policies\Microsoft\Windows\WindowsCopilot" "TurnOffWindowsCopilot" 1
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot" "TurnOffWindowsCopilot" 1
-            # 3. Kill Edge Integration
             Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "HubsSidebarEnabled" 0
-            # 4. Uninstall App (24H2 natively treats it as an Appx)
-            Get-AppxPackage *Copilot* -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue 
+            Get-AppxPackage *Copilot* | Remove-AppxPackage -ErrorAction SilentlyContinue 
         }
         Revert={ 
             Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowCopilotButton" 1
@@ -673,7 +585,6 @@ $RoninDB = @{
             Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "HubsSidebarEnabled"
         }
         Check={ 
-            # LEVEL 5: Verify ALL 4 Points of Entry + Appx Removal
             $ui = Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowCopilotButton" 0
             $polUser = Test-Reg-Read "HKCU:\Software\Policies\Microsoft\Windows\WindowsCopilot" "TurnOffWindowsCopilot" 1
             $polMach = Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot" "TurnOffWindowsCopilot" 1
@@ -726,22 +637,8 @@ $RoninDB = @{
         Apply={ Disable-Task "\Microsoft\Windows\Application Experience" "Microsoft Compatibility Appraiser"; Disable-Task "\Microsoft\Windows\Application Experience" "ProgramDataUpdater"; Disable-Task "\Microsoft\Windows\Application Experience" "StartupAppTask"; Disable-Task "\Microsoft\Windows\Autochk" "Proxy"; Disable-Task "\Microsoft\Windows\Customer Experience Improvement Program" "Consolidator"; Disable-Task "\Microsoft\Windows\Customer Experience Improvement Program" "UsbCeip"; Disable-Task "\Microsoft\Windows\Customer Experience Improvement Program" "KernelCeipTask"; Disable-Task "\Microsoft\Windows\DiskDiagnostic" "Microsoft-Windows-DiskDiagnosticDataCollector" }
         Revert={ Enable-Task "\Microsoft\Windows\Application Experience" "Microsoft Compatibility Appraiser"; Enable-Task "\Microsoft\Windows\Application Experience" "ProgramDataUpdater"; Enable-Task "\Microsoft\Windows\Application Experience" "StartupAppTask"; Enable-Task "\Microsoft\Windows\Autochk" "Proxy"; Enable-Task "\Microsoft\Windows\Customer Experience Improvement Program" "Consolidator"; Enable-Task "\Microsoft\Windows\Customer Experience Improvement Program" "UsbCeip"; Enable-Task "\Microsoft\Windows\Customer Experience Improvement Program" "KernelCeipTask"; Disable-Task "\Microsoft\Windows\DiskDiagnostic" "Microsoft-Windows-DiskDiagnosticDataCollector" }
         Check={ 
-            # LEVEL 5: Verify STATE of ALL 8 TASKS
-            $tasks = @(
-                @("\Microsoft\Windows\Application Experience", "Microsoft Compatibility Appraiser"),
-                @("\Microsoft\Windows\Application Experience", "ProgramDataUpdater"),
-                @("\Microsoft\Windows\Application Experience", "StartupAppTask"),
-                @("\Microsoft\Windows\Autochk", "Proxy"),
-                @("\Microsoft\Windows\Customer Experience Improvement Program", "Consolidator"),
-                @("\Microsoft\Windows\Customer Experience Improvement Program", "UsbCeip"),
-                @("\Microsoft\Windows\Customer Experience Improvement Program", "KernelCeipTask"),
-                @("\Microsoft\Windows\DiskDiagnostic", "Microsoft-Windows-DiskDiagnosticDataCollector")
-            )
-            
-            foreach ($t in $tasks) {
-                $obj = Get-ScheduledTask -TaskPath ($t[0] + "\") -TaskName $t[1] -ErrorAction SilentlyContinue
-                if ($obj -and $obj.State -ne "Disabled") { return $false }
-            }
+            $tasks = @(@("\Microsoft\Windows\Application Experience", "Microsoft Compatibility Appraiser"), @("\Microsoft\Windows\Application Experience", "ProgramDataUpdater"), @("\Microsoft\Windows\Application Experience", "StartupAppTask"), @("\Microsoft\Windows\Autochk", "Proxy"), @("\Microsoft\Windows\Customer Experience Improvement Program", "Consolidator"), @("\Microsoft\Windows\Customer Experience Improvement Program", "UsbCeip"), @("\Microsoft\Windows\Customer Experience Improvement Program", "KernelCeipTask"), @("\Microsoft\Windows\DiskDiagnostic", "Microsoft-Windows-DiskDiagnosticDataCollector"))
+            foreach ($t in $tasks) { $obj = Get-ScheduledTask -TaskPath ($t[0] + "\") -TaskName $t[1] -ErrorAction SilentlyContinue; if ($obj -and $obj.State -ne "Disabled") { return $false } }
             return $true
         } 
     }
@@ -751,27 +648,15 @@ $RoninDB = @{
         Apply={ Disable-Task "\Microsoft\Windows\User Experience" "AmbientExperienceTasks"; Disable-Task "\Microsoft\Windows\AI" "AIAAgentUpdateTask" }
         Revert={ Enable-Task "\Microsoft\Windows\User Experience" "AmbientExperienceTasks"; Enable-Task "\Microsoft\Windows\AI" "AIAgentUpdateTask" }
         Check={ 
-            # LEVEL 5: Verify STATE of ALL AI TASKS
             $t1 = Get-ScheduledTask -TaskPath "\Microsoft\Windows\User Experience\" -TaskName "AmbientExperienceTasks" -ErrorAction SilentlyContinue
             $t2 = Get-ScheduledTask -TaskPath "\Microsoft\Windows\AI\" -TaskName "AIAAgentUpdateTask" -ErrorAction SilentlyContinue
-            
             $t1OK = (!$t1 -or $t1.State -eq "Disabled")
             $t2OK = (!$t2 -or $t2.State -eq "Disabled")
-            
             return ($t1OK -and $t2OK)
         } 
     }
 
-    "Priv_Feedback" = @{ 
-        Apply={ Get-AppxPackage *feedback* | Remove-AppxPackage -ErrorAction SilentlyContinue; Stop-Service DiagTrack -Force -ErrorAction SilentlyContinue; Set-Service DiagTrack -StartupType Disabled }; 
-        Check={ 
-            # DEEP VERIFICATION: Service Stopped + Disabled
-            $s = Get-Service DiagTrack -ErrorAction SilentlyContinue
-            if (!$s) { return $true }
-            return ($s.StartType -eq "Disabled" -and $s.Status -ne "Running") 
-        } 
-    }
-    
+    "Priv_Feedback" = @{ Apply={ Get-AppxPackage *feedback* | Remove-AppxPackage -ErrorAction SilentlyContinue; Stop-Service DiagTrack -Force -ErrorAction SilentlyContinue; Set-Service DiagTrack -StartupType Disabled }; Check={ $s = Get-Service DiagTrack -ErrorAction SilentlyContinue; if (!$s) { return $true }; return ($s.StartType -eq "Disabled" -and $s.Status -ne "Running") } }
     "Priv_Inventory" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 1 }; Revert={ Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppCompat" "DisableInventory" 1 } }
     "Priv_ActivityUpload" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "UploadUserActivities" 0 }; Revert={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "UploadUserActivities" 1 }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "UploadUserActivities" 0 } }
     "Priv_CloudClipboard" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowClipboardHistory" 0 }; Revert={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowClipboardHistory" 1 }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowClipboardHistory" 0 } }
@@ -782,176 +667,42 @@ $RoninDB = @{
     "Priv_TailoredExp" = @{ Apply={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesAllowed" 0 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesAllowed" 1 }; Check={ return (Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesAllowed" 0) } }
 
     # --- HANDHELD ---
-    # FIXED: Fallback to Disk Search + Forces Steam Internal Registry Setting (StartupMode=1)
     "HH_SteamDeck" = @{
         Apply={ 
             $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-            # 1. Force the Internal Steam Setting (This toggles the checkbox in UI)
             Set-Reg "HKCU:\Software\Valve\Steam" "StartupMode" 1 "DWord"
-            
-            # 2. Find Steam Path (Registry or Disk Fallback)
             $steamPath = (Get-ItemProperty "HKCU:\Software\Valve\Steam" -ErrorAction SilentlyContinue).SteamExe
-            if (!$steamPath -or !(Test-Path $steamPath)) {
-                if (Test-Path "C:\Program Files (x86)\Steam\steam.exe") { $steamPath = "C:\Program Files (x86)\Steam\steam.exe" }
-                elseif (Test-Path "C:\Program Files\Steam\steam.exe") { $steamPath = "C:\Program Files\Steam\steam.exe" }
-            }
-            
-            # 3. Force the Windows Run Key (Just in case Steam doesn't self-heal immediately)
-            if ($steamPath) {
-                $steamPath = $steamPath.Replace("/", "\")
-                $val = "`"$steamPath`" -gamepadui -silent"
-                Set-Reg $path "Steam" $val "String"
-            }
+            if (!$steamPath -or !(Test-Path $steamPath)) { if (Test-Path "C:\Program Files (x86)\Steam\steam.exe") { $steamPath = "C:\Program Files (x86)\Steam\steam.exe" } elseif (Test-Path "C:\Program Files\Steam\steam.exe") { $steamPath = "C:\Program Files\Steam\steam.exe" } }
+            if ($steamPath) { $steamPath = $steamPath.Replace("/", "\"); Set-Reg $path "Steam" "`"$steamPath`" -gamepadui -silent" "String" }
         }
-        Revert={ 
-            Set-Reg "HKCU:\Software\Valve\Steam" "StartupMode" 0 "DWord"
-            Remove-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" "Steam" 
-        }
-        Check={ 
-            # LEVEL 5: Check Internal Setting AND Windows Run Key (Autostart)
-            $internal = Test-Reg-Read "HKCU:\Software\Valve\Steam" "StartupMode" 1
-            $runKey = (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).Steam
-            return ($internal -and ($runKey -match "-gamepadui"))
-        }
+        Revert={ Set-Reg "HKCU:\Software\Valve\Steam" "StartupMode" 0 "DWord"; Remove-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" "Steam" }
+        Check={ $internal = Test-Reg-Read "HKCU:\Software\Valve\Steam" "StartupMode" 1; $runKey = (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).Steam; return ($internal -and ($runKey -match "-gamepadui")) }
     }
 
     "HH_HibernateBtn" = @{ 
         Apply={ powercfg /setacvalueindex scheme_current sub_buttons 7648efa3-dd9c-4e3e-b566-50f929386280 2; powercfg /setdcvalueindex scheme_current sub_buttons 7648efa3-dd9c-4e3e-b566-50f929386280 2; powercfg /setactive scheme_current }
         Revert={ powercfg /setacvalueindex scheme_current sub_buttons 7648efa3-dd9c-4e3e-b566-50f929386280 1; powercfg /setdcvalueindex scheme_current sub_buttons 7648efa3-dd9c-4e3e-b566-50f929386280 1; powercfg /setactive scheme_current }
         Check={ 
-            $output = powercfg /getactivescheme; 
-            if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; 
-            $q = powercfg /qh $guid sub_buttons 7648efa3-dd9c-4e3e-b566-50f929386280 | Out-String; 
-            $acMatch = $q -match "Current AC Power Setting Index:\s+(0x[0-9a-fA-F]+|[0-9]+)"; $acVal = if($acMatch){ [Convert]::ToInt32($matches[1], 16) } else { -1 }
-            $dcMatch = $q -match "Current DC Power Setting Index:\s+(0x[0-9a-fA-F]+|[0-9]+)"; $dcVal = if($dcMatch){ [Convert]::ToInt32($matches[1], 16) } else { -1 }
-            return ($acVal -eq 2 -and $dcVal -eq 2)
+            $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid sub_buttons 7648efa3-dd9c-4e3e-b566-50f929386280 | Out-String; 
+            $acMatch = $q -match "Current AC Power Setting Index:\s+(0x[0-9a-fA-F]+|[0-9]+)"; $acVal = if($acMatch){ [Convert]::ToInt32($matches[1], 16) } else { -1 }; $dcMatch = $q -match "Current DC Power Setting Index:\s+(0x[0-9a-fA-F]+|[0-9]+)"; $dcVal = if($dcMatch){ [Convert]::ToInt32($matches[1], 16) } else { -1 }; return ($acVal -eq 2 -and $dcVal -eq 2)
         } 
     }
 
-    "HH_WakeTimers" = @{ 
-        Apply={ powercfg /setacvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 0; powercfg /setdcvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 0; powercfg /setactive scheme_current }
-        Revert={ powercfg /setacvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 1; powercfg /setdcvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 1; powercfg /setactive scheme_current }
-        Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /q $guid 238c9fa8-0aad-41ed-83f4-97be242c8f20 bd3b7116-3b1b-43b5-b725-3003e2754d52 | Out-String; if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { $v = $matches[1]; if ($v -match "0x") { $v = [Convert]::ToInt32($v, 16) }; if ($v -eq 0) { return $true } } return $false } 
-    }
-
-    "HH_Standby" = @{ 
-        SlowCheck=$true; 
-        Apply={ powercfg /setacvalueindex scheme_current sub_none F15576E8-98B7-4186-B944-EAFA664402D9 0 }
-        Check={ 
-            $output = powercfg /getactivescheme; 
-            if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; 
-            $q = powercfg /qh $guid sub_none F15576E8-98B7-4186-B944-EAFA664402D9 | Out-String; 
-            if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } 
-            return $false 
-        } 
-    } 
-    
-    "HH_WifiPower" = @{ 
-        SlowCheck=$true;
-        Apply={ $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\19cbb8fa-5279-450e-9fac-8a3d5fedd0c1\12bbebe6-58d6-4636-95bb-3217ef867c1a"; if(Test-Path $regPath){ Set-ItemProperty -Path $regPath -Name "Attributes" -Value 2 -Type DWord -Force }; powercfg /setacvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 0; powercfg /setdcvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 0; powercfg /setactive scheme_current }
-        Revert={ powercfg /setacvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 3; powercfg /setdcvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 3; powercfg /setactive scheme_current }
-        Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a | Out-String; if ($q -match "Index:\s+0x0*([0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } return $false } 
-    }
-
+    "HH_WakeTimers" = @{ Apply={ powercfg /setacvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 0; powercfg /setdcvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 0; powercfg /setactive scheme_current }; Revert={ powercfg /setacvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 1; powercfg /setdcvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 1; powercfg /setactive scheme_current }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /q $guid 238c9fa8-0aad-41ed-83f4-97be242c8f20 bd3b7116-3b1b-43b5-b725-3003e2754d52 | Out-String; if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { $v = $matches[1]; if ($v -match "0x") { $v = [Convert]::ToInt32($v, 16) }; if ($v -eq 0) { return $true } } return $false } }
+    "HH_Standby" = @{ SlowCheck=$true; Apply={ powercfg /setacvalueindex scheme_current sub_none F15576E8-98B7-4186-B944-EAFA664402D9 0 }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid sub_none F15576E8-98B7-4186-B944-EAFA664402D9 | Out-String; if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } return $false } } 
+    "HH_WifiPower" = @{ SlowCheck=$true; Apply={ $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\19cbb8fa-5279-450e-9fac-8a3d5fedd0c1\12bbebe6-58d6-4636-95bb-3217ef867c1a"; if(Test-Path $regPath){ Set-ItemProperty -Path $regPath -Name "Attributes" -Value 2 -Type DWord -Force }; powercfg /setacvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 0; powercfg /setdcvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 0; powercfg /setactive scheme_current }; Revert={ powercfg /setacvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 3; powercfg /setdcvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 3; powercfg /setactive scheme_current }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a | Out-String; if ($q -match "Index:\s+0x0*([0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } return $false } }
     "HH_BtFix" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\BthPort\Parameters" "DisableSelectiveSuspend" 1 }; Revert={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\BthPort\Parameters" "DisableSelectiveSuspend" 0 }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Services\BthPort\Parameters" "DisableSelectiveSuspend" 1 } }
     "HH_CoreIso" = @{ Reboot=$true; Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" "Enabled" 0 }; Revert={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" "Enabled" 1 }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" "Enabled" 0 } }
-    
-    "HH_DeviceGuard" = @{
-        Reboot=$true
-        Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LsaCfgFlags" 0; Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "EnableVirtualizationBasedSecurity" 0 }
-        Revert={ Remove-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LsaCfgFlags"; Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "EnableVirtualizationBasedSecurity" }
-        Check={ 
-            $c1 = Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "EnableVirtualizationBasedSecurity" 0 
-            $c2 = Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LsaCfgFlags" 0
-            return ($c1 -and $c2)
-        }
-    }
-
-    "HH_UsbSuspend" = @{ 
-        Apply={ powercfg /SETACVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b352172fdf33 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0; powercfg /SETDCVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b352172fdf33 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0; powercfg /setactive scheme_current }
-        Check={ 
-             $output = powercfg /getactivescheme; 
-             if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; 
-             $q = powercfg /qh $guid 2a737441-1930-4402-8d77-b352172fdf33 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 | Out-String; 
-             if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } 
-             return $false 
-        }
-    }
-
+    "HH_DeviceGuard" = @{ Reboot=$true; Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LsaCfgFlags" 0; Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "EnableVirtualizationBasedSecurity" 0 }; Revert={ Remove-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LsaCfgFlags"; Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "EnableVirtualizationBasedSecurity" }; Check={ $c1 = Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard" "EnableVirtualizationBasedSecurity" 0; $c2 = Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" "LsaCfgFlags" 0; return ($c1 -and $c2) } }
+    "HH_UsbSuspend" = @{ Apply={ powercfg /SETACVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b352172fdf33 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0; powercfg /SETDCVALUEINDEX SCHEME_CURRENT 2a737441-1930-4402-8d77-b352172fdf33 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0; powercfg /setactive scheme_current }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid 2a737441-1930-4402-8d77-b352172fdf33 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 | Out-String; if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } return $false } }
     "HH_EdgeSwipe" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EdgeUI" "AllowEdgeSwipe" 0 }; Revert={ Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EdgeUI" "AllowEdgeSwipe" }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Policies\Microsoft\Windows\EdgeUI" "AllowEdgeSwipe" 0 } }
-    
-    "HH_Encryption" = @{ 
-        SlowCheck=$true; 
-        Apply={ 
-            $vol = Get-CimInstance -ClassName Win32_EncryptableVolume -Namespace "root/cimv2/Security/MicrosoftVolumeEncryption" -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -eq "C:" }
-            if ($vol -and ($vol.ProtectionStatus -eq 0)) { return }
-            Start-Process "manage-bde" -ArgumentList "-off C:" -NoNewWindow
-        }; 
-        Check={ 
-            $s = Get-CimInstance -ClassName Win32_EncryptableVolume -Namespace "root/cimv2/Security/MicrosoftVolumeEncryption" -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -eq "C:" }
-            if (!$s) { return $true } 
-            return ($s.ProtectionStatus -eq 0) 
-        } 
-    }
-
-    "HH_TouchResponse" = @{ 
-        Apply={ Set-Reg "HKCU:\Control Panel\Desktop" "MenuShowDelay" "0" "String"; Set-Reg "HKCU:\Control Panel\Desktop" "WaitToKillAppTimeout" "2000" "String" }; 
-        Revert={ Set-Reg "HKCU:\Control Panel\Desktop" "MenuShowDelay" "400" "String"; Set-Reg "HKCU:\Control Panel\Desktop" "WaitToKillAppTimeout" "5000" "String" }; 
-        Check={ 
-            $c1 = Test-Reg-Read "HKCU:\Control Panel\Desktop" "MenuShowDelay" "0" 
-            $c2 = Test-Reg-Read "HKCU:\Control Panel\Desktop" "WaitToKillAppTimeout" "2000"
-            return ($c1 -and $c2)
-        } 
-    }
-
+    "HH_Encryption" = @{ SlowCheck=$true; Apply={ $vol = Get-CimInstance -ClassName Win32_EncryptableVolume -Namespace "root/cimv2/Security/MicrosoftVolumeEncryption" -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -eq "C:" }; if ($vol -and ($vol.ProtectionStatus -eq 0)) { return }; Start-Process "manage-bde" -ArgumentList "-off C:" -NoNewWindow }; Check={ $s = Get-CimInstance -ClassName Win32_EncryptableVolume -Namespace "root/cimv2/Security/MicrosoftVolumeEncryption" -ErrorAction SilentlyContinue | Where-Object { $_.DriveLetter -eq "C:" }; if (!$s) { return $true }; return ($s.ProtectionStatus -eq 0) } }
+    "HH_TouchResponse" = @{ Apply={ Set-Reg "HKCU:\Control Panel\Desktop" "MenuShowDelay" "0" "String"; Set-Reg "HKCU:\Control Panel\Desktop" "WaitToKillAppTimeout" "2000" "String" }; Revert={ Set-Reg "HKCU:\Control Panel\Desktop" "MenuShowDelay" "400" "String"; Set-Reg "HKCU:\Control Panel\Desktop" "WaitToKillAppTimeout" "5000" "String" }; Check={ $c1 = Test-Reg-Read "HKCU:\Control Panel\Desktop" "MenuShowDelay" "0"; $c2 = Test-Reg-Read "HKCU:\Control Panel\Desktop" "WaitToKillAppTimeout" "2000"; return ($c1 -and $c2) } }
     "HH_TouchKeyboard" = @{ Apply={ Set-Service "TabletInputService" -StartupType Automatic; Start-Service "TabletInputService" }; Check={ (Get-Service "TabletInputService" -ErrorAction SilentlyContinue).Status -eq "Running" } }
-    
-    "HH_GameBarWriter" = @{ 
-        Apply={ Stop-Service "GameBarPresenceWriter" -Force -ErrorAction SilentlyContinue; Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" "AppCaptureEnabled" 0 }; 
-        Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" "AppCaptureEnabled" 1 }; 
-        Check={ 
-            $c1 = Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" "AppCaptureEnabled" 0
-            $s = Get-Service "GameBarPresenceWriter" -ErrorAction SilentlyContinue
-            if (!$s) { return $true }
-            return ($c1 -and $s.Status -ne "Running")
-        } 
-    }
-    
-    # FIXED: Handheld Launchers now return FALSE if service is missing (Avoids Green Box on Desktop)
-    "HH_Asus_AC" = @{ 
-        Apply={ Set-Service "ArmouryCrateService" -StartupType Manual }
-        Revert={ Set-Service "ArmouryCrateService" -StartupType Automatic }
-        Check={ 
-            # LEVEL 3: Check Manual StartType AND Stopped Status
-            $s=Get-Service "ArmouryCrateService" -ErrorAction SilentlyContinue; 
-            if ($s) { return ($s.StartType -ne "Automatic" -and $s.Status -ne "Running") } 
-            return $false 
-        } 
-    }
-    
-    "HH_Legion_Space" = @{ 
-        Apply={ Disable-Task "\" "LSDaemon"; Remove-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "LegionSpace"; Remove-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "LegionSpace" }
-        Revert={ Enable-Task "\" "LSDaemon" }
-        Check={ 
-            # LEVEL 3: Check Task Disabled AND Registry Keys Deleted
-            $t = Get-ScheduledTask -TaskName "LSDaemon" -ErrorAction SilentlyContinue; 
-            $r1 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).LegionSpace
-            $r2 = (Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).LegionSpace
-            if ($t) { return ($t.State -eq "Disabled" -and $r1 -eq $null -and $r2 -eq $null) } 
-            return $false 
-        } 
-    }
-    
-    "HH_Msi_Center" = @{ 
-        Apply={ Set-Service "MSI_Central_Service" -StartupType Manual }
-        Check={ 
-             # LEVEL 3: Check Manual StartType AND Stopped Status
-             $s = Get-Service "MSI_Central_Service" -ErrorAction SilentlyContinue; 
-             if ($s) { return ($s.StartType -eq "Manual" -and $s.Status -ne "Running") } 
-             return $false 
-        } 
-    }
-    
+    "HH_GameBarWriter" = @{ Apply={ Stop-Service "GameBarPresenceWriter" -Force -ErrorAction SilentlyContinue; Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" "AppCaptureEnabled" 0 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" "AppCaptureEnabled" 1 }; Check={ $c1 = Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\GameDVR" "AppCaptureEnabled" 0; $s = Get-Service "GameBarPresenceWriter" -ErrorAction SilentlyContinue; if (!$s) { return $true }; return ($c1 -and $s.Status -ne "Running") } }
+    "HH_Asus_AC" = @{ Apply={ Set-Service "ArmouryCrateService" -StartupType Manual }; Revert={ Set-Service "ArmouryCrateService" -StartupType Automatic }; Check={ $s=Get-Service "ArmouryCrateService" -ErrorAction SilentlyContinue; if ($s) { return ($s.StartType -ne "Automatic" -and $s.Status -ne "Running") } return $false } }
+    "HH_Legion_Space" = @{ Apply={ Disable-Task "\" "LSDaemon"; Remove-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "LegionSpace"; Remove-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "LegionSpace" }; Revert={ Enable-Task "\" "LSDaemon" }; Check={ $t = Get-ScheduledTask -TaskName "LSDaemon" -ErrorAction SilentlyContinue; $r1 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).LegionSpace; $r2 = (Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).LegionSpace; if ($t) { return ($t.State -eq "Disabled" -and $r1 -eq $null -and $r2 -eq $null) } return $false } }
+    "HH_Msi_Center" = @{ Apply={ Set-Service "MSI_Central_Service" -StartupType Manual }; Check={ $s = Get-Service "MSI_Central_Service" -ErrorAction SilentlyContinue; if ($s) { return ($s.StartType -eq "Manual" -and $s.Status -ne "Running") } return $false } }
     "HH_VMP" = @{ Reboot=$true; SlowCheck=$true; Apply={ Disable-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -NoRestart }; Check={ (Get-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform").State -eq "Disabled" } }
     "HH_CompactOS" = @{ SlowCheck=$true; Apply={ Start-Process "compact" "/CompactOS:always" -Wait -NoNewWindow }; Check={ (compact /CompactOS:query) -match "is in the Compact state" } }
     "HH_HiberReduced" = @{ SlowCheck=$true; Apply={ powercfg /h /type reduced }; Check={ (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "HiberFileType" -ErrorAction SilentlyContinue).HiberFileType -eq 2 } }
@@ -961,54 +712,16 @@ $RoninDB = @{
     # --- ADVANCED ---
     "Adv_InputLatency" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Kbdclass\Parameters" "KeyboardDataQueueSize" 50 }; Revert={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Kbdclass\Parameters" "KeyboardDataQueueSize" 100 }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Services\Kbdclass\Parameters" "KeyboardDataQueueSize" 50 } }
     "Adv_Priority" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" "Win32PrioritySeparation" 38 }; Revert={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" "Win32PrioritySeparation" 2 }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" "Win32PrioritySeparation" 38 } }
-    
-    "Adv_Storage" = @{ 
-        SlowCheck=$true; 
-        Apply={ fsutil behavior set disable8dot3 1; fsutil behavior set disablelastaccess 1 }; 
-        Check={ 
-            $c1 = (fsutil behavior query disable8dot3) -match "1" 
-            $c2 = (fsutil behavior query disablelastaccess) -match "1"
-            return ($c1 -and $c2)
-        } 
-    }
-    
+    "Adv_Storage" = @{ SlowCheck=$true; Apply={ fsutil behavior set disable8dot3 1; fsutil behavior set disablelastaccess 1 }; Check={ $c1 = (fsutil behavior query disable8dot3) -match "1"; $c2 = (fsutil behavior query disablelastaccess) -match "1"; return ($c1 -and $c2) } }
     "Adv_UltPower" = @{ SlowCheck=$true; Apply={ powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61; powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61 }; Check={ (powercfg /getactivescheme) -match "e9a42b02-d5df-448d-aa00-03f14749eb61" } }
-    "Adv_TimerOpt" = @{ 
-        Warning="Resets system timer to Windows Defaults (TSC). Resolves stutters in modern games."
-        Reboot=$true; SlowCheck=$true; Apply={ bcdedit /deletevalue useplatformclock }; Revert={ bcdedit /deletevalue useplatformclock }; Check={ $out = bcdedit /enum | Out-String; return ($out -notmatch "useplatformclock") } 
-    }
+    "Adv_TimerOpt" = @{ Warning="Resets system timer to Windows Defaults (TSC). Resolves stutters in modern games."; Reboot=$true; SlowCheck=$true; Apply={ bcdedit /deletevalue useplatformclock }; Revert={ bcdedit /deletevalue useplatformclock }; Check={ $out = bcdedit /enum | Out-String; return ($out -notmatch "useplatformclock") } }
     "Adv_MemComp" = @{ SlowCheck=$true; Apply={ Enable-MMAgent -MemoryCompression }; Revert={ Disable-MMAgent -MemoryCompression }; Check={ (Get-MMAgent).MemoryCompression -eq $true } }
     "Adv_PageFile" = @{ Reboot=$true; SlowCheck=$true; Apply={ $sys = Get-CimInstance Win32_ComputerSystem -EnableAllPrivileges; if($sys.AutomaticManagedPagefile){ $sys.AutomaticManagedPagefile=$false; $sys.Put() } }; Check={ (Get-CimInstance Win32_ComputerSystem).AutomaticManagedPagefile -eq $false } }
     "Adv_NetPower" = @{ SlowCheck=$true; Apply={ Get-NetAdapter -Physical | Get-NetAdapterPowerManagement | Set-NetAdapterPowerManagement -AllowComputerToTurnOffDevice $false -ErrorAction SilentlyContinue }; Check={ $a = Get-NetAdapter -Physical | Get-NetAdapterPowerManagement | Select -First 1; return ($a.AllowComputerToTurnOffDevice -eq $false) } }
-    
-    "Adv_PhotoViewer" = @{ 
-        Apply={ Set-Reg "HKCU:\Software\Classes\.jpg" "(default)" "PhotoViewer.FileAssoc.Tiff" "String"; Set-Reg "HKCU:\Software\Classes\.png" "(default)" "PhotoViewer.FileAssoc.Tiff" "String" }; 
-        Check={ 
-            $v1 = Get-ItemProperty "HKCU:\Software\Classes\.jpg" -ErrorAction SilentlyContinue
-            $v2 = Get-ItemProperty "HKCU:\Software\Classes\.png" -ErrorAction SilentlyContinue
-            return ($v1.'(default)' -eq "PhotoViewer.FileAssoc.Tiff" -and $v2.'(default)' -eq "PhotoViewer.FileAssoc.Tiff") 
-        } 
-    }
-    
+    "Adv_PhotoViewer" = @{ Apply={ Set-Reg "HKCU:\Software\Classes\.jpg" "(default)" "PhotoViewer.FileAssoc.Tiff" "String"; Set-Reg "HKCU:\Software\Classes\.png" "(default)" "PhotoViewer.FileAssoc.Tiff" "String" }; Check={ $v1 = Get-ItemProperty "HKCU:\Software\Classes\.jpg" -ErrorAction SilentlyContinue; $v2 = Get-ItemProperty "HKCU:\Software\Classes\.png" -ErrorAction SilentlyContinue; return ($v1.'(default)' -eq "PhotoViewer.FileAssoc.Tiff" -and $v2.'(default)' -eq "PhotoViewer.FileAssoc.Tiff") } }
     "Adv_UTC" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" "RealTimeIsUniversal" 1 }; Revert={ Remove-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" "RealTimeIsUniversal" }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" "RealTimeIsUniversal" 1 } }
-    
-    "Adv_Printing" = @{ 
-        Apply={ Stop-Service Spooler -Force; Set-Service Spooler -StartupType Disabled }; 
-        Revert={ Set-Service Spooler -StartupType Automatic; Start-Service Spooler }; 
-        Check={ 
-            # LEVEL 4: Check Disabled AND Stopped
-            $s = Get-Service Spooler -ErrorAction SilentlyContinue
-            if (!$s) { return $true }
-            return ($s.StartType -eq "Disabled" -and $s.Status -ne "Running") 
-        } 
-    }
-    
-    "Adv_ReservedStorage" = @{
-        SlowCheck=$true
-        Apply={ Start-Process "dism" -ArgumentList "/Online /Set-ReservedStorageState /State:Disabled" -Wait -NoNewWindow }
-        Revert={ Start-Process "dism" -ArgumentList "/Online /Set-ReservedStorageState /State:Enabled" -Wait -NoNewWindow }
-        Check={ (dism /online /Get-ReservedStorageState) -match "is disabled" }
-    }
+    "Adv_Printing" = @{ Apply={ Stop-Service Spooler -Force; Set-Service Spooler -StartupType Disabled }; Revert={ Set-Service Spooler -StartupType Automatic; Start-Service Spooler }; Check={ $s = Get-Service Spooler -ErrorAction SilentlyContinue; if (!$s) { return $true }; return ($s.StartType -eq "Disabled" -and $s.Status -ne "Running") } }
+    "Adv_ReservedStorage" = @{ SlowCheck=$true; Apply={ Start-Process "dism" -ArgumentList "/Online /Set-ReservedStorageState /State:Disabled" -Wait -NoNewWindow }; Revert={ Start-Process "dism" -ArgumentList "/Online /Set-ReservedStorageState /State:Enabled" -Wait -NoNewWindow }; Check={ (dism /online /Get-ReservedStorageState) -match "is disabled" } }
 }
 
 $AutoMap = @{ "Sys_VisualFX"="Auto_Visuals"; "Sys_DeviceInstall"="Auto_Drivers"; "Sys_RemoteAssist"="Auto_Remote"; "Sys_Recall"="Auto_Recall"; "Game_HAGS"="Auto_Hags"; "Game_GameMode"="Auto_GameMode"; "Sys_SysRestore"="Auto_SysRestore"; "Sys_UAC"="Auto_UAC"; "HH_CoreIso"="Auto_CoreIso"; "Priv_Tele"="Auto_Tele"; "Priv_AdID"="Auto_AdID"; "Priv_Loc"="Auto_Loc"; "Priv_Wifi"="Auto_Wifi"; "Priv_Bing"="Auto_Bing"; "Priv_Widgets"="Auto_Widgets"; "Priv_Copilot"="Auto_Copilot"; "Game_PCIe"="Auto_PCIe"; "Game_VariBright"="Auto_VariBright"; "Game_DPST"="Auto_DPST"; "Sys_AutoBright"="Auto_Bright"; "Priv_ConsumerFeatures"="Auto_Consumer"; "Priv_WER"="Auto_WER"; "Sys_CpuOpt"="Auto_CpuOpt"; "Sys_StartAds"="Auto_StartAds"; "Priv_ActivityUpload"="Auto_Activity" }

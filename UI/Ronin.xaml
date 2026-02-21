@@ -1,6 +1,6 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PROJECT RONIN // Definitive Edition (v6.5.98)" Height="730" Width="1100"
+        Title="PROJECT RONIN // Definitive Edition (v7.0)" Height="730" Width="1100"
         WindowStartupLocation="CenterScreen" ResizeMode="CanResize"
         Background="Transparent" Foreground="#E0E0E0" FontFamily="Segoe UI"
         MinWidth="800" MinHeight="450" WindowStyle="None" AllowsTransparency="True">
@@ -204,7 +204,7 @@
                 <RowDefinition Height="32"/> <RowDefinition Height="*"/>  </Grid.RowDefinitions>
 
             <Grid x:Name="TitleBar" Grid.Row="0" Background="#00000000">
-                <TextBlock Text="PROJECT RONIN // v6.5.98" Foreground="#666" FontSize="10" FontFamily="Consolas" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False"/>
+                <TextBlock Text="PROJECT RONIN // v7.0" Foreground="#666" FontSize="10" FontFamily="Consolas" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="Btn_Min" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource WindowControlBtn}"/>
                     <Button x:Name="Btn_Close" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource WindowControlBtn}">
@@ -250,7 +250,7 @@
                                         <TextBlock Text="RONIN" FontSize="48" FontWeight="Black" Foreground="#FF2E2E" Margin="-2,-10,0,0" FontFamily="Impact">
                                             <TextBlock.Effect><DropShadowEffect Color="#FF2E2E" BlurRadius="25" ShadowDepth="0" Opacity="0.6"/></TextBlock.Effect>
                                         </TextBlock>
-                                        <TextBlock Text="DEFINITIVE EDITION // v6.5.98" FontSize="10" Foreground="#555" Margin="2,-5,0,15" FontWeight="Bold" FontFamily="Consolas"/>
+                                        <TextBlock Text="DEFINITIVE EDITION // v7.0" FontSize="10" Foreground="#555" Margin="2,-5,0,15" FontWeight="Bold" FontFamily="Consolas"/>
                                     </StackPanel>
 
                                     <Border Background="#151515" CornerRadius="4" Margin="20,0,20,0" BorderBrush="#333" BorderThickness="1">

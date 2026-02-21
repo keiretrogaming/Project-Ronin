@@ -1,10 +1,11 @@
-# --- PROJECT RONIN: CONTROLLER v6.5.98 "SENTINEL" ---
-# STATUS: GOLD MASTER // ENTERPRISE GRADE
-# UPDATE: Synchronized with "Definitive Edition" UI (Boxed Layout).
-# UPDATE: Hardened Logic Tree Traversal for deep-nested controls.
+# --- PROJECT RONIN: CONTROLLER v7.0.0 "SENTINEL" ---
+# STATUS: SECURITY FRIENDLY // GOLD MASTER
+# UPDATE: REMOVED Marshal::PrelinkAll to resolve AV/AMSI flagging.
+# UPDATE: REMOVED Process Priority Elevation to follow standard Windows management.
+# UPDATE: Hardened Logic Tree Traversal for deep-nested controls maintained.
 # PRIME DIRECTIVE: NO-REFACTOR (Logic Integrity Maintained).
 
-$Version = "6.5.98"
+$Version = "7.0.0"
 
 Try {
     $ErrorActionPreference = "Stop"
@@ -12,18 +13,14 @@ Try {
     # --- 0. PROFESSIONAL BOOTSTRAP & PROCESS ELEVATION ---
     if ([System.Environment]::OSVersion.Version.Major -ge 6) {
         try { 
-            [System.Runtime.InteropServices.Marshal]::PrelinkAll([System.Windows.Forms.Application])
+            # REMOVED Marshal::PrelinkAll for AV Compliance.
             [System.Windows.Application]::SetHighDpiMode([System.Windows.Forms.HighDpiMode]::PerMonitorV2)
             # FORCE SOFTWARE RENDERING IF GPU IS UNSTABLE (Enterprise Stability)
             # [System.Windows.Media.RenderOptions]::ProcessRenderMode = [System.Windows.Interop.RenderMode]::SoftwareOnly 
         } catch {}
     }
 
-    # Elevate UI Process Priority for "AAA" Smoothness
-    try {
-        $proc = Get-Process -Id $PID
-        if ($proc.PriorityClass -eq "Normal") { $proc.PriorityClass = "AboveNormal" }
-    } catch {}
+    # REMOVED: Process Priority Elevation block to resolve AV heuristics.
 
     $LogPath = "$env:TEMP\Ronin_CrashLog.txt"
     Start-Transcript -Path $LogPath -Append -ErrorAction SilentlyContinue

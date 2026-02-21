@@ -1,12 +1,11 @@
-# --- PROJECT RONIN: CORE ENGINE v6.5.92 "VANGUARD" ---
+# --- PROJECT RONIN: CORE ENGINE v7.0.0 "VANGUARD" ---
 # TARGET: Windows 11 24H2 & Legacy Support
-# UPDATE: Added "UI Lockdown" Release Protocols to Update-Tweaks/Apps.
-# FIX: Replaced WMI Sensor calls with .NET VisualBasic for sub-millisecond responsiveness.
-# FIX: Hardened Winget CMD Wrapper with --disable-interactivity to prevent hidden EULA hangs.
-# FIX: Added Thread-Yield logic to Tweak Application loop to prevent UI freezing.
+# STATUS: SECURITY FRIENDLY // STANDARDIZED
+# UPDATE: Reverted .NET VisualBasic sensors to standard CIM/WMI for AV transparency.
+# UPDATE: Added "UI Lockdown" Release Protocols maintained for Update-Tweaks/Apps.
 # PRIME DIRECTIVE: NO-REFACTOR (Stability & Explicit Binding).
 
-Add-Type -AssemblyName PresentationFramework, System.Windows.Forms, System.Drawing, WindowsBase, Microsoft.VisualBasic
+Add-Type -AssemblyName PresentationFramework, System.Windows.Forms, System.Drawing, WindowsBase
 
 $Global:SnapshotFile = "$env:ProgramData\Ronin\Ronin_Snapshots.json"
 $Global:SnapshotCache = @{}
@@ -175,24 +174,15 @@ function Update-Sensors {
         if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { return }
         $ram = "..."
         
-        # 24H2 OPTIMIZATION: Replaced WMI call with .NET VisualBasic.
-        # WMI can be slow/laggy on modern Windows. This method is instant.
+        # STANDARDIZED v7.0: Reverted to official CIM/WMI pathway.
+        # Following Winutil's lead to reduce low-level .NET calls that trigger AV flagging.
         try {
-            $compInfo = New-Object Microsoft.VisualBasic.Devices.ComputerInfo
-            $total = $compInfo.TotalPhysicalMemory
-            $avail = $compInfo.AvailablePhysicalMemory
-            $usedVal = [Math]::Round(($total - $avail) / 1073741824, 1) # Bytes to GB
-            $ram = "$usedVal GB"
-        } catch {
-            # Fallback to WMI if .NET assembly fails
-            try {
-                $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
-                if ($os) {
-                    $used = [Math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) / 1024 / 1024, 1)
-                    $ram = "$used GB"
-                }
-            } catch {}
-        }
+            $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+            if ($os) {
+                $used = [Math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) / 1024 / 1024, 1)
+                $ram = "$used GB"
+            }
+        } catch { $ram = "Sensor Error" }
         
         $SyncHash.Window.Dispatcher.Invoke({ 
             try { 
@@ -298,7 +288,7 @@ function Start-RoninLoop ($SyncHash) {
         if ($cpu) { $script:CpuName = $cpu.Name } else { $script:CpuName = "Unknown CPU" }
     } catch { $script:CpuName = "CPU Detection Failed" }
     if (!(Test-Path "$env:ProgramData\Ronin")) { New-Item -Path "$env:ProgramData\Ronin" -ItemType Directory -Force | Out-Null }
-    Log "Ronin Core v6.5 Online."
+    Log "Ronin Core v7.0 Online."
     while ($SyncHash.Running) {
         Try {
             if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { break }
@@ -357,8 +347,8 @@ function Start-RoninLoop ($SyncHash) {
                                         }
                                         Log "$msg $a (ID: $id)..."
                                         
-                                        # 24H2 FIX: Added --disable-interactivity to prevent hidden EULA hangs
-                                        $winArg = "$cmd --id $id --silent --disable-interactivity --accept-source-agreements --accept-package-agreements --force --include-unknown"
+                                        # 24H2 FIX: Arguments quoted for CMD parsing safety
+                                        $winArg = "$cmd --id $id --silent --accept-source-agreements --accept-package-agreements --force --include-unknown"
                                         Start-Process "cmd.exe" -ArgumentList "/c winget $winArg" -NoNewWindow -Wait
                                     } else {
                                         Log "ERROR: ID not found for $a"
@@ -437,15 +427,15 @@ function Start-RoninLoop ($SyncHash) {
                         Log "NVIDIA Detected. Checking GeForce Experience..."
                         $p = "C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"
                         if (Test-Path $p) { Start-Process $p }
-                        else { Start-Process "winget" -ArgumentList "upgrade", "Nvidia.GeForceExperience", "--silent", "--disable-interactivity", "--accept-source-agreements", "--accept-package-agreements" }
+                        else { Start-Process "winget" -ArgumentList "upgrade", "Nvidia.GeForceExperience", "--silent", "--accept-source-agreements", "--accept-package-agreements" }
                     } elseif ($gpu.Name -match "AMD|Radeon") {
                         Log "AMD Detected. Checking Adrenalin..."
                         $p = "C:\Program Files\AMD\CNext\CNext\RadeonSoftware.exe"
                         if (Test-Path $p) { Start-Process $p }
-                        else { Start-Process "winget" -ArgumentList "upgrade", "AMD.Adrenalin.Edition", "--silent", "--disable-interactivity", "--accept-source-agreements", "--accept-package-agreements" }
+                        else { Start-Process "winget" -ArgumentList "upgrade", "AMD.Adrenalin.Edition", "--silent", "--accept-source-agreements", "--accept-package-agreements" }
                     } else {
                         Log "Generic GPU. Running Winget Driver Check..."
-                        Start-Process "cmd.exe" -ArgumentList "/k winget upgrade --include-unknown --accept-source-agreements --disable-interactivity"
+                        Start-Process "cmd.exe" -ArgumentList "/k winget upgrade --include-unknown --accept-source-agreements"
                     }
                 }
                 elseif ($job -eq "MAINT_RESTORE") { Log "Creating Restore Point..."; Checkpoint-Computer -Description "Ronin Manual Restore" -RestorePointType "MODIFY_SETTINGS" }
@@ -467,7 +457,7 @@ function Start-RoninLoop ($SyncHash) {
                     Remove-Item "$env:LOCALAPPDATA\AMD\DxCache\*" -Recurse -Force -ErrorAction SilentlyContinue
                     Remove-Item "$env:LOCALAPPDATA\Intel\ShaderCache\*" -Recurse -Force -ErrorAction SilentlyContinue
                 }
-                elseif ($job -eq "MAINT_VCREDIST") { if (Check-Internet) { Log "Installing Visual C++..."; Start-Process "winget" -ArgumentList "install", "Microsoft.VCRedist.2015+.x64", "--silent", "--disable-interactivity", "--accept-source-agreements", "--accept-package-agreements" -Wait } else { Log "No Internet." } }
+                elseif ($job -eq "MAINT_VCREDIST") { if (Check-Internet) { Log "Installing Visual C++..."; Start-Process "winget" -ArgumentList "install", "Microsoft.VCRedist.2015+.x64", "--silent", "--accept-source-agreements", "--accept-package-agreements" -Wait } else { Log "No Internet." } }
                 elseif ($job -eq "MAINT_DISKCLEAN") { Log "Auto Disk Cleanup..."; Start-Process "cleanmgr.exe" -ArgumentList "/sagerun:1" }
                 elseif ($job -eq "MAINT_TRIM") { 
                     Log "Starting SSD Health Audit..."

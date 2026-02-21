@@ -14,5 +14,5 @@ if %errorLevel% == 0 (
 
 :RunRonin
 echo Launching Project Ronin...
-:: Temporarily bypass execution policy and run the script from the /src folder
-powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0src\Ronin.ps1"
+:: STANDARD PRACTICE: Removed Hidden flag to avoid AV "Evasion" triggers.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0src\Ronin.ps1"
