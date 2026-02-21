@@ -1,3 +1,11 @@
+> [!CAUTION]
+> ### 🛡️ Antivirus False Positives & Microsoft Review Status
+> **Current Status:** Manual False-Positive Review in Progress.
+>
+> Project Ronin is a powerful system utility that modifies deep Windows Registry and Group Policy settings. Because of this, aggressive security engines like **Bitdefender** or **Windows Defender (AMSI)** may flag the cloud-launch command as "malicious."
+>
+> **This is a False Positive.** To verify the safety of this tool, you can manually audit every line of code in the `/src` folder. If your system blocks the cloud command, please use the **Manual Setup** method (downloading the .zip) while we await the global whitelist update.
+
 
 # ⚔️ Project Ronin
 
@@ -71,5 +79,6 @@ Trust is built on transparency and the ability to roll back changes. Project Ron
 ## ⚖️ Disclaimer
 
 *Project Ronin is shared as an open-source tool. While it is rigorously tested for stability, modifying system-level settings always carries a small inherent risk. Always maintain a current backup of your important files. Provided "as-is" under the MIT License.*
+
 
 ---
