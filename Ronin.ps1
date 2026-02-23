@@ -5,9 +5,9 @@ $ErrorActionPreference = "Stop"
 
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Elevating Ronin to Administrator..." -ForegroundColor Cyan
-    $scriptUrl = "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/Ronin.ps1"
-    $script = if ($PSCommandPath) { "& { & '$($PSCommandPath)' }" } else { "&([ScriptBlock]::Create((irm $scriptUrl)))" }
-    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Normal -Command "$script"" -Verb RunAs
+    $scriptUrl = "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/Ronin.ps1?t=$([guid]::NewGuid())"
+    $script = if ($PSCommandPath) { "& { & '$($PSCommandPath)' }" } else { "&([ScriptBlock]::Create((irm '$scriptUrl')))" }
+    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Normal -Command `"$script`"" -Verb RunAs
     exit
 }
 # --- PROJECT RONIN: CONTROLLER v7.1.0 ---
