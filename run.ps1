@@ -1,36 +1,15 @@
-# run.ps1 - Project Ronin Cloud Bootstrapper v7.0
-$ErrorActionPreference = "Stop"
+# Project Ronin: Shogun Bootstrapper
+$url = "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/Ronin.ps1"
+$tempPath = "$env:TEMP\Ronin_Monolith.ps1"
 
-Write-Host "=====================================" -ForegroundColor Cyan
-Write-Host "    INITIALIZING PROJECT RONIN...     " -ForegroundColor Cyan
-Write-Host "=====================================" -ForegroundColor Cyan
+Write-Host "[*] Downloading Project Ronin Engine..." -ForegroundColor Cyan
 
-$repoZipUrl = "https://github.com/keiretrogaming/Project-Ronin/archive/refs/heads/main.zip"
-$tempZip = "$env:TEMP\Ronin.zip"
-$extractPath = "$env:TEMP\Ronin_Live"
+# Download the monolithic script to a file instead of RAM
+Invoke-RestMethod -Uri $url -OutFile $tempPath
 
-# Cleanup
-if (Test-Path $tempZip) { Remove-Item $tempZip -Force }
-if (Test-Path $extractPath) { Remove-Item $extractPath -Recurse -Force }
-
-try {
-    Write-Host "Downloading latest engine..." -ForegroundColor Gray
-    Invoke-WebRequest -Uri $repoZipUrl -OutFile $tempZip -UseBasicParsing
-    
-    Write-Host "Extracting assets..." -ForegroundColor Gray
-    Expand-Archive -Path $tempZip -DestinationPath $extractPath -Force
-    
-    $extractedFolder = Get-ChildItem -Path $extractPath -Directory | Select-Object -First 1
-    # Ensure this matches your repo structure (src\Ronin.ps1)
-    $RoninScript = Join-Path $extractedFolder.FullName "src\Ronin.ps1"
-    
-    Write-Host "Deploying UI..." -ForegroundColor Green
-    
-    # GUARDIAN FIX: Removed -WindowStyle Hidden to prevent AV behavioral flags.
-    # This matches Winutil's launch transparency.
-    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$RoninScript`"" -Verb RunAs
-} catch {
-    Write-Host "FATAL ERROR: Failed to download or run Project Ronin." -ForegroundColor Red
-    Write-Host $_.Exception.Message -ForegroundColor Red
-    Start-Sleep -Seconds 10
+# Launch the file from the disk (This is much more "trustworthy" to AV)
+if (Test-Path $tempPath) {
+    Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$tempPath`"" -Verb RunAs
+} else {
+    Write-Error "Download Failed."
 }
