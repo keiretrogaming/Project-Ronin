@@ -19,8 +19,7 @@ The fastest way to run Project Ronin. This command securely downloads the latest
 3. Paste the following command and press Enter:
 
 ```powershell
-irm [https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1](https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1) | iex
-
+irm https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1 | iex
 
 ```
 
@@ -86,3 +85,4 @@ Trust is built on transparency and the ability to roll back changes. Project Ron
 *Project Ronin is shared as an open-source tool. While it is rigorously tested for stability, modifying system-level settings always carries a small inherent risk. Always maintain a current backup of your important files. Provided "as-is" under the MIT License.*
 
 ---
+
