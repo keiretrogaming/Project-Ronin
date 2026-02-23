@@ -1,95 +1,88 @@
-```markdown
-# ⚔️ Project Ronin: Shogun Edition (v7.1.0)
 
-> [!IMPORTANT]
-> [cite_start]**Developer Note on Antivirus:** Because Ronin touches deep registry keys and system policies, tools like Windows Defender or Bitdefender might flag the launch command as a "threat." [cite: 6] [cite_start]This is a false positive based on the *behavior* of modifying system settings, not malicious code. [cite: 6] [cite_start]You can audit every line in the `/src` folder yourself. [cite: 6] [cite_start]If your system blocks the cloud command, just download the .zip and run it manually. [cite: 6]
+# Project Ronin
 
-[cite_start]Project Ronin is a policy-driven optimization suite built for Windows 11 power users and handheld gamers. [cite: 6] [cite_start]Unlike debloaters that take a "scorched earth" approach and break Windows Update, Ronin uses official registry flags and Group Policies to keep your OS lean and fast without making it unserviceable. [cite: 6]
+### *A transparent, policy-driven optimization suite for Windows 11.*
+
+**Project Ronin** is a comprehensive PowerShell utility designed to strip away Windows 11 telemetry, stabilize gaming frame times, and optimize windows handheld devices.
+
+Unlike "scorched-earth" debloaters that permanently delete system files and break Windows Update, Ronin uses official **Group Policies** and **Registry Flags** to ensure your system remains stable, secure, and entirely reversible.
+<img width="1664" height="1113" alt="image" src="https://github.com/user-attachments/assets/0b49822c-fa6f-4a3c-a999-c35da5e007fa" />
 
 ---
 
-## 🚀 Quick Launch
+## 🚀 Quick Launch (No Download Required)
 
-No installation needed. Run this from an **Admin Terminal** to pull the latest Shogun build directly into memory:
+The fastest way to run Project Ronin. This command securely downloads the latest release into your temporary files, temporarily bypasses local execution policies, and launches the UI natively.
+
+1. Right-click the Windows Start button.
+2. Select **Terminal (Admin)** or **Windows PowerShell (Admin)**.
+3. Paste the following command and press Enter:
 
 ```powershell
-irm [https://get.ronin.dev](https://get.ronin.dev) | iex
+irm [https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1](https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1) | iex
+
 
 ```
 
-*Note: If the cloud command fails due to local execution policies, download the [Latest Release](https://github.com/keiretrogaming/Project-Ronin/releases) and run `Launch_Ronin.bat`.* 
+---
+
+## 📥 Manual Installation
+
+If you prefer to download the files and run them locally:
+
+1. Download the latest `.zip` from the releases tab and extract it.
+2. Double-click the **`Launch_Ronin.bat`** file.
+3. Accept the Administrator prompt. *(The batch file automatically handles PowerShell execution policies for you).*
 
 ---
 
-## 🏯 What’s New in the Shogun Edition (v7.1.0)?
+## 🛡️ The Non-Destructive Optimization Policy
 
-The 7.1 release is a complete engine overhaul focused on handheld hardware and system stability. 
+Trust is built on transparency and the ability to roll back changes. Project Ronin is built on the following safety principles:
 
-* 
-**Shogun Power Architecture:** A new 5-tier EPP (Energy Performance Preference) system. You can now balance your power budget between the CPU and GPU (GPU Bias) to get better FPS in AAA games on handhelds. 
-
-
-* 
-**Dual-State Logic:** Tweaks now apply to both AC (Plugged In) and DC (Battery) states independently. 
-
-
-* 
-**Engine Hardening:** We added a 750ms "registry settling" delay and strict UI tab-locking. This stops race conditions and ensures your settings actually "stick" the first time. 
-
-
-* 
-**AV Compliance:** We removed aggressive hooks like "The Vaccine" and process priority elevation. Ronin now plays nice with Windows Defender while maintaining its optimization power. 
-
-
-* 
-**Universal Compatibility:** Moved from English-string parsing to 36-character GUID RegEx. Ronin now works on any language version of Windows. 
-
-
+* **Automatic Restore Points:** A system restore point is triggered before any major modifications are applied.
+* **Policy-Based Tweaks:** We use Group Policy and official Windows registry flags. Windows recognizes these changes as "intended settings" rather than corrupted files.
+* **Non-Destructive:** We do not delete `System32` components. If you want a feature back (like Windows Copilot or the Snap Flyout), you can simply toggle it back on.
+* **Hardware Aware:** The script checks your hardware ID on launch. It won't attempt to push NVIDIA-specific latency tweaks to an AMD-based handheld device.
 
 ---
 
-## 🛠️ Optimization Protocols
+## 🕹️ Core Modules
 
-| Module | Focus | What it actually does |
+| Module | Purpose | Key Tweaks |
 | --- | --- | --- |
-| **Auto Optimize** | Standard Issue | Applies the "Ronin Core" set: disables telemetry, ads, and fixes PCIe stutters. 
+| **Auto-Optimize** | The Baseline | Safe, high-impact defaults that work for 99% of users. |
+<img width="1660" height="1111" alt="image" src="https://github.com/user-attachments/assets/e3b527b4-b822-42c4-97fa-8caa616215d2" />
 
- |
-| **System Core** | OS Fundamentals | Cleans up Explorer, fixes the Right-Click menu, and tunes kernel responsiveness. 
+| **System Core** | UI & Background | Fixes "Ghost Sleep," removes Start Menu ads, and streamlines Explorer. |
+<img width="1659" height="1108" alt="image" src="https://github.com/user-attachments/assets/50414530-3183-4d7e-a076-2017498fcf34" />
 
- |
-| **Gaming & GPU** | Frame Times | Enables HAGS, VRR, and optimizes network buffers for lower latency. 
+| **Gaming & GPU** | Latency & Stability | Sets HAGS/VRR flags and safely disables MPO to prevent flickering. |
+<img width="1665" height="1108" alt="image" src="https://github.com/user-attachments/assets/71f6a5da-98ea-42a6-b181-5e76c7ec5934" />
 
- |
-| **Handheld** | Portables | <br>**Shogun Exclusive:** 5-Tier EPP slicing, Modern Standby fixes, and "Hot-Bag" prevention. 
+| **Handheld** | Portable Devices | Fixes "Hot-Bag" issues by forcing Hibernate; optimizes CPU EPP. |
+<img width="1669" height="1114" alt="image" src="https://github.com/user-attachments/assets/11d52281-ce66-41bc-bd20-a180675ab90b" />
 
- |
-| **Privacy Shield** | 24H2 Hardening | Kills Recall AI, Copilot, and background data-mining tasks. 
+| **Privacy Shield** | Disables Recall AI, Copilot, and aggressive telemetry data-mining. |
+<img width="1664" height="1109" alt="image" src="https://github.com/user-attachments/assets/2add469c-ec66-4094-b68a-49833954f9b0" />
 
- |
-| **Maintenance** | Diagnostics | SSD health audits, TRIM cycles, and DISM/SFC system repairs. 
-
- |
+| **Maintenance** | Diagnostics | One Click Repair for Windows 11, resets MS Store, and audits SSD health. |
+<img width="1660" height="1107" alt="image" src="https://github.com/user-attachments/assets/0d6a7d40-9179-4d33-aaa8-99cb26c77367" />
 
 ---
 
 ## ❓ Frequently Asked Questions
 
-**Will this break my Windows Updates?**
-No. We kill the annoying parts (forced restarts and bandwidth stealing), but the core security patching stays intact. 
+**Will this break Windows Update?** No. Project Ronin disables the *annoyances* of Windows Update (like forced auto-restarts and using your bandwidth to seed updates to other PCs via WUDO), but the core security patching engine remains fully intact.
 
-**Is this safe for my ROG Ally / Legion Go / MSI Claw?**
-Yes—it was built for them. Ronin detects your hardware and unlocks the Handheld tab automatically, giving you better control over battery drain and thermal throttling than the factory software. 
+**Why is this a PowerShell script instead of an executable (.exe)?** Authenticity and security. An `.exe` is a black box. A `.ps1` file is plain text. You should never run a system-level optimizer if you cannot easily audit the code behind it.
 
-**Can I undo the changes?**
-Everything Ronin does is backed up to a local snapshot. Use the built-in **Snapshot Recovery Tool** or the "Undo All" button in Expert Mode to return to Windows defaults. 
+**Is this safe for Handhelds (MSI Claw, ROG Ally, Legion Go)?** Yes. Project Ronin automatically detects handheld hardware. The dedicated **Handheld** tab includes specific fixes for Modern Standby issues, custom EPP power slicing, and manufacturer bloatware management.
 
 ---
 
 ## ⚖️ Disclaimer
 
-Project Ronin is open-source. While I’ve tested this rigorously on my own machines, you’re modifying system-level settings.  Always keep a backup. Provided "as-is" under the MIT License. 
+*Project Ronin is shared as an open-source tool. While it is rigorously tested for stability, modifying system-level settings always carries a small inherent risk. Always maintain a current backup of your important files. Provided "as-is" under the MIT License.*
 
-```
-
-```
+---
