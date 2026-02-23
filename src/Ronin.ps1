@@ -1,6 +1,11 @@
-# --- PROJECT RONIN: CONTROLLER v7.1.0 ---
+# --- PROJECT RONIN: CONTROLLER v7.0.0 "SENTINEL" ---
+# STATUS: SECURITY FRIENDLY // GOLD MASTER
+# UPDATE: REMOVED Marshal::PrelinkAll to resolve AV/AMSI flagging.
+# UPDATE: REMOVED Process Priority Elevation to follow standard Windows management.
+# UPDATE: Hardened Logic Tree Traversal for deep-nested controls maintained.
+# PRIME DIRECTIVE: NO-REFACTOR (Logic Integrity Maintained).
 
-$Version = "7.1.0"
+$Version = "7.0.0"
 
 Try {
     $ErrorActionPreference = "Stop"
@@ -265,28 +270,8 @@ Try {
 
     $AllControls = Find-Controls-Flat $window
 
-    # --- TOUCH MODE & SCALING LOGIC ---
-    $window.FindName("Global_TouchMode").Add_Checked({
-        $scale = New-Object System.Windows.Media.ScaleTransform
-        $scale.ScaleX = 1.15
-        $scale.ScaleY = 1.15
-        $window.LayoutTransform = $scale
-        if ($Global:RoninDojo) {
-            $Global:RoninDojo.Text = "TOUCH MODE ACTIVE: Interface scaled for Handhelds."
-            $Global:RoninDojo.Foreground = [System.Windows.Media.Brushes]::Cyan
-        }
-    })
-    
-    $window.FindName("Global_TouchMode").Add_Unchecked({
-        $window.LayoutTransform = $null
-        if ($Global:RoninDojo) {
-            $Global:RoninDojo.Text = "Standard UI Scale Active."
-            $Global:RoninDojo.Foreground = [System.Windows.Media.Brushes]::Gray
-        }
-    })
-
-    # --- EXPERT MODE LOGIC (UPDATED WITH NEW FEATURES) ---
-    $ExpertControls = @("Sys_Bloatware", "Sys_DeviceInstall", "Adv_Printing", "Adv_TimerOpt", "Sys_SearchIndex", "HH_VMP", "Btn_UndoAll", "Btn_InPlaceUpgrade", "Adv_WSL", "Adv_HyperV")
+    # --- EXPERT MODE LOGIC ---
+    $ExpertControls = @("Sys_Bloatware", "Sys_DeviceInstall", "Adv_Printing", "Adv_TimerOpt", "Sys_SearchIndex", "HH_VMP", "Btn_UndoAll", "Btn_InPlaceUpgrade")
     
     $window.FindName("Global_ExpertMode").Add_Checked({ 
         foreach ($name in $ExpertControls) {
@@ -561,9 +546,8 @@ Try {
         $j=[System.Collections.ArrayList]::new(); $controls = Find-Controls-Logical ($window.FindName("Tab_Auto"))
         $controls | ForEach-Object {
             if ($_ -is [System.Windows.Controls.CheckBox]) {
-                 # FIX: Removed phantom "Auto_Turbo" logic to prevent silent execution breaks.
                  $dbKey = switch ($_.Name) {
-                    "Auto_Visuals" { "Sys_VisualFX" }; "Auto_Hags" { "Game_HAGS" }; "Auto_GameMode" { "Game_GameMode" }
+                    "Auto_Visuals" { "Sys_VisualFX" }; "Auto_Turbo" { "Auto_Turbo" }; "Auto_Hags" { "Game_HAGS" }; "Auto_GameMode" { "Game_GameMode" }
                     "Auto_Recall" { "Sys_Recall" }; "Auto_SysRestore" { "Sys_SysRestore" }; "Auto_UAC" { "Sys_UAC" }
                     "Auto_CoreIso" { "HH_CoreIso" }; "Auto_Tele" { "Priv_Tele" }; "Auto_AdID" { "Priv_AdID" }; "Auto_Loc" { "Priv_Loc" }
                     "Auto_Wifi" { "Priv_Wifi" }; "Auto_Bing" { "Priv_Bing" }; "Auto_Widgets" { "Priv_Widgets" }; "Auto_Copilot" { "Priv_Copilot" }

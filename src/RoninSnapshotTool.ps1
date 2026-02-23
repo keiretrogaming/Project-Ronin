@@ -1,4 +1,6 @@
-# --- PROJECT RONIN: SNAPSHOT RECOVERY TOOL (v1.0.1) ---
+# --- PROJECT RONIN: SNAPSHOT RECOVERY TOOL (v1.0) ---
+# Use this tool to manually view or restore individual registry values 
+# backed up by the Ronin Engine.
 
 Add-Type -AssemblyName PresentationFramework, System.Windows.Forms
 
@@ -9,27 +11,7 @@ if (!(Test-Path $SnapshotFile)) {
     exit
 }
 
-# --- DEFENSIVE ENGINEER FIX: PS 5.1 Compatible JSON Parsing ---
-$Snapshots = @{}
-try {
-    $jsonContent = Get-Content $SnapshotFile -Raw
-    if (-not [string]::IsNullOrWhiteSpace($jsonContent)) {
-        $jsonObj = $jsonContent | ConvertFrom-Json
-        if ($jsonObj) {
-            $jsonObj.psobject.properties | ForEach-Object {
-                $Snapshots[$_.Name] = $_.Value
-            }
-        }
-    }
-} catch {
-    [System.Windows.Forms.MessageBox]::Show("CRITICAL: Failed to parse the Snapshot database. The file may be corrupted or locked.", "Ronin Recovery Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-    exit
-}
-
-if ($Snapshots.Keys.Count -eq 0) {
-    [System.Windows.Forms.MessageBox]::Show("Snapshot database is empty. No backups to recover.", "Ronin Recovery")
-    exit
-}
+$Snapshots = Get-Content $SnapshotFile | ConvertFrom-Json -AsHashtable
 
 $xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -103,7 +85,7 @@ $btnRestore.Add_Click({
             
             [System.Windows.Forms.MessageBox]::Show("Restored: $($selected.Name)", "Success")
         } catch {
-            [System.Windows.Forms.MessageBox]::Show("Restore Failed: $($_.Exception.Message)", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            [System.Windows.Forms.MessageBox]::Show("Restore Failed: $($_.Exception.Message)", "Error")
         }
     }
 })
