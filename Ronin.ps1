@@ -3,6 +3,12 @@
 # ==============================================================================
 $ErrorActionPreference = "Stop"
 
+# Load all required assemblies before anything else runs
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName PresentationCore
+Add-Type -AssemblyName WindowsBase
+
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Elevating Ronin to Administrator..." -ForegroundColor Cyan
     $scriptUrl = "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/Ronin.ps1?t=$([guid]::NewGuid())"
