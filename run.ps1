@@ -1,4 +1,4 @@
-# run.ps1 - Project Ronin Cloud Bootstrapper v7.0
+# run.ps1 - Project Ronin Cloud Bootstrapper v7.0.4
 $ErrorActionPreference = "Stop"
 
 Write-Host "=====================================" -ForegroundColor Cyan

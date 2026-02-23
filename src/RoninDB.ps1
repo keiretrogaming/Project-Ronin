@@ -1,9 +1,4 @@
-# --- PROJECT RONIN: TWEAK DATABASE v7.0.0 (STANDARDIZED) ---
-# BASE: Core v6.5.92 // TITANIUM MASTER v6.5.95
-# STATUS: SECURITY FRIENDLY // EXTERNAL RELEASE CANDIDATE
-# UPDATE: REMOVED "The Vaccine" (Boot-time Sanitation) to resolve AV Flagging.
-# UPDATE: Sys_SysRestore normalized to use standard WMI/CIM cmdlets instead of Policy Lockdown.
-# PRIME DIRECTIVE: NO-REFACTOR (Stability & Density Guaranteed)
+# --- PROJECT RONIN: TWEAK DATABASE v7.1.0 (SHOGUN EDITION) ---
 
 # --- INTEL REGISTRY HELPER ---
 function Get-Intel-Video-Key {
@@ -17,10 +12,6 @@ function Get-Intel-Video-Key {
     }
     return $null
 }
-
-# --- CRITICAL STABILITY: BOOT-TIME SANITATION (THE VACCINE) ---
-# DELETED for v7.0 to resolve Heuristic AV Flagging.
-# Logic previously targeting IoPageLockLimit, NtfsMemoryUsage, and IoPriority removed.
 
 $RoninDB = @{
     # --- SYSTEM ---
@@ -71,12 +62,10 @@ $RoninDB = @{
     "Sys_SysRestore" = @{ 
         SlowCheck=$true; 
         Apply={ 
-            # STANDARDIZED v7.0: Switched from Policy Lockdown to Standard Management
             Disable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" "DisableSR" 1 
         }
         Revert={ 
-            # CLEANUP: Scouring old Policy keys to ensure standard behavior
             Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore" "DisableSR"
             Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\SystemRestore" "DisableConfig"
             Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" "DisableSR" 0
@@ -104,6 +93,8 @@ $RoninDB = @{
         }
         Check={ $a=Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0; $b=Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 1; return ($a -and $b) }
     }
+
+    "Sys_MeetNow" = @{ Apply={ Set-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "HideSCAMeetNow" 1 }; Revert={ Remove-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "HideSCAMeetNow" }; Check={ Test-Reg-Read "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" "HideSCAMeetNow" 1 } }
 
     "Sys_ExplorerOpen" = @{ Apply={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 1 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 2 }; Check={ Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "LaunchTo" 1 } }
     "Sys_ShowExt" = @{ Apply={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 1 }; Check={ Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0 } }
@@ -152,8 +143,16 @@ $RoninDB = @{
     
     "Sys_AutoBright" = @{
         SlowCheck=$true
-        Apply={ powercfg /setacvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 FBD9AA66-9553-4097-BA44-ED6E9D65EAB8 0; powercfg /setactive scheme_current }
-        Revert={ powercfg /setacvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 FBD9AA66-9553-4097-BA44-ED6E9D65EAB8 1; powercfg /setactive scheme_current }
+        Apply={ 
+            powercfg /setacvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 FBD9AA66-9553-4097-BA44-ED6E9D65EAB8 0
+            powercfg /setdcvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 FBD9AA66-9553-4097-BA44-ED6E9D65EAB8 0
+            powercfg /setactive scheme_current 
+        }
+        Revert={ 
+            powercfg /setacvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 FBD9AA66-9553-4097-BA44-ED6E9D65EAB8 1
+            powercfg /setdcvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 FBD9AA66-9553-4097-BA44-ED6E9D65EAB8 1
+            powercfg /setactive scheme_current 
+        }
         Check={ 
             $guid = "scheme_current";
             $out = powercfg /getactivescheme | Out-String;
@@ -168,26 +167,42 @@ $RoninDB = @{
         SlowCheck=$true;
         Warning="Removes Standard Apps (Calculator, Mail, etc) AND OneDrive.";
         Apply={ 
-            $l=@("*Clipchamp*","*Spotify*","*Netflix*","*Disney*","*TikTok*","*CandyCrush*","*OutlookForWindows*");
-            $appList = ($l -join "`n").Replace("*", "")
-            $msg = "WARNING: This will permanently remove the following pre-installed apps:`n`n$appList`n`nPLUS: Microsoft OneDrive (Full Uninstall)`n`nAre you sure you want to proceed?"
-            $result = [System.Windows.Forms.MessageBox]::Show($msg, "Confirm Bloatware Removal", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Warning)
+            $appsToKill = @("*Clipchamp*","*Spotify*","*Netflix*","*Disney*","*TikTok*","*CandyCrush*","*OutlookForWindows*","*WindowsFeedbackHub*","*BingNews*","*ZuneVideo*");
+            $msg = "WARNING: This will permanently remove common Windows Bloatware and Microsoft OneDrive.`n`nAre you sure you want to proceed?"
+            
+            # --- FIX: Marshalling confirmation to Main UI Thread ---
+            $result = "No"
+            if ($SyncHash -and $SyncHash.Window) {
+                $result = $SyncHash.Window.Dispatcher.Invoke([System.Func[String]] {
+                    return [System.Windows.Forms.MessageBox]::Show($msg, "Ronin Bloatware Removal", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Warning).ToString()
+                })
+            } else {
+                $result = [System.Windows.Forms.MessageBox]::Show($msg, "Ronin Bloatware Removal", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Warning).ToString()
+            }
+
             if ($result -eq "Yes") {
-                foreach($a in $l){Get-AppxPackage $a|Remove-AppxPackage -ErrorAction SilentlyContinue};
+                if ($SyncHash) { Log "Initiating Bloatware Purge..." }
+                foreach($a in $appsToKill){
+                    if ($SyncHash) { Log "Removing $a..." }
+                    Get-AppxPackage $a -AllUsers | Remove-AppxPackage -ErrorAction SilentlyContinue
+                    Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -match $a} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+                }
+
+                if ($SyncHash) { Log "Removing OneDrive..." }
                 try {
                     Stop-Process -Name "OneDrive" -Force -ErrorAction SilentlyContinue
-                    $od = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-                    if (!(Test-Path $od)) { $od = "$env:SystemRoot\System32\OneDriveSetup.exe" }
-                    if (Test-Path $od) { Start-Process $od -ArgumentList "/uninstall" -Wait -NoNewWindow }
-                } catch {}
+                    $odSetup = if ([Environment]::Is64BitOperatingSystem) { "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" } else { "$env:SystemRoot\System32\OneDriveSetup.exe" }
+                    if (Test-Path $odSetup) { 
+                        Start-Process $odSetup -ArgumentList "/uninstall" -NoNewWindow -Wait 
+                    }
+                } catch { if ($SyncHash) { Log "OneDrive removal encountered an error." } }
+                
+                if ($SyncHash) { Log "Bloatware removal complete." }
             }
         }; 
         Check={ 
             $p = Get-AppxPackage *WindowsFeedbackHub* -ErrorAction SilentlyContinue
-            $od1 = "$env:SystemRoot\SysWOW64\OneDriveSetup.exe"
-            $od2 = "$env:SystemRoot\System32\OneDriveSetup.exe"
-            $hasOneDrive = (Test-Path $od1) -or (Test-Path $od2)
-            return ($p -eq $null -and !$hasOneDrive)
+            return ($p -eq $null)
         } 
     }
 
@@ -208,12 +223,16 @@ $RoninDB = @{
         SlowCheck=$true
         Apply={ 
             powercfg /setacvalueindex scheme_current sub_processor 893dee8e-2bef-41e0-89c6-b55d0929964c 5
+            powercfg /setdcvalueindex scheme_current sub_processor 893dee8e-2bef-41e0-89c6-b55d0929964c 5
             powercfg /setacvalueindex scheme_current sub_processor bc5038f7-23e0-4960-96da-33abaf5935ec 100
+            powercfg /setdcvalueindex scheme_current sub_processor bc5038f7-23e0-4960-96da-33abaf5935ec 100
             powercfg /setactive scheme_current 
         }
         Revert={ 
             powercfg /setacvalueindex scheme_current sub_processor 893dee8e-2bef-41e0-89c6-b55d0929964c 5
+            powercfg /setdcvalueindex scheme_current sub_processor 893dee8e-2bef-41e0-89c6-b55d0929964c 5
             powercfg /setacvalueindex scheme_current sub_processor bc5038f7-23e0-4960-96da-33abaf5935ec 100
+            powercfg /setdcvalueindex scheme_current sub_processor bc5038f7-23e0-4960-96da-33abaf5935ec 100
             powercfg /setactive scheme_current 
         }
         Check={ 
@@ -594,6 +613,8 @@ $RoninDB = @{
         } 
     }
     
+    "Priv_StorageSense" = @{ Apply={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" "01" 0 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" "01" 1 }; Check={ Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" "01" 0 } }
+
     "Priv_OneDrive" = @{
         Apply={ Set-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 1 }
         Revert={ Remove-Reg "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" }
@@ -666,7 +687,7 @@ $RoninDB = @{
     "Priv_TypingInsights" = @{ Apply={ Set-Reg "HKCU:\Software\Microsoft\Input\Settings" "InsightsEnabled" 0 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Input\Settings" "InsightsEnabled" 1 }; Check={ return (Test-Reg-Read "HKCU:\Software\Microsoft\Input\Settings" "InsightsEnabled" 0) } }
     "Priv_TailoredExp" = @{ Apply={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesAllowed" 0 }; Revert={ Set-Reg "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesAllowed" 1 }; Check={ return (Test-Reg-Read "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesAllowed" 0) } }
 
-    # --- HANDHELD ---
+    # --- HANDHELD / DUAL-STATE POWER TWEAKS ---
     "HH_SteamDeck" = @{
         Apply={ 
             $path = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
@@ -689,7 +710,7 @@ $RoninDB = @{
     }
 
     "HH_WakeTimers" = @{ Apply={ powercfg /setacvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 0; powercfg /setdcvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 0; powercfg /setactive scheme_current }; Revert={ powercfg /setacvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 1; powercfg /setdcvalueindex scheme_current sub_sleep bd3b7116-3b1b-43b5-b725-3003e2754d52 1; powercfg /setactive scheme_current }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /q $guid 238c9fa8-0aad-41ed-83f4-97be242c8f20 bd3b7116-3b1b-43b5-b725-3003e2754d52 | Out-String; if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { $v = $matches[1]; if ($v -match "0x") { $v = [Convert]::ToInt32($v, 16) }; if ($v -eq 0) { return $true } } return $false } }
-    "HH_Standby" = @{ SlowCheck=$true; Apply={ powercfg /setacvalueindex scheme_current sub_none F15576E8-98B7-4186-B944-EAFA664402D9 0 }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid sub_none F15576E8-98B7-4186-B944-EAFA664402D9 | Out-String; if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } return $false } } 
+    "HH_Standby" = @{ SlowCheck=$true; Apply={ powercfg /setacvalueindex scheme_current sub_none F15576E8-98B7-4186-B944-EAFA664402D9 0; powercfg /setdcvalueindex scheme_current sub_none F15576E8-98B7-4186-B944-EAFA664402D9 0; powercfg /setactive scheme_current }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid sub_none F15576E8-98B7-4186-B944-EAFA664402D9 | Out-String; if ($q -match "Index:\s+(0x[0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } return $false } } 
     "HH_WifiPower" = @{ SlowCheck=$true; Apply={ $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\19cbb8fa-5279-450e-9fac-8a3d5fedd0c1\12bbebe6-58d6-4636-95bb-3217ef867c1a"; if(Test-Path $regPath){ Set-ItemProperty -Path $regPath -Name "Attributes" -Value 2 -Type DWord -Force }; powercfg /setacvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 0; powercfg /setdcvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 0; powercfg /setactive scheme_current }; Revert={ powercfg /setacvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 3; powercfg /setdcvalueindex scheme_current 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a 3; powercfg /setactive scheme_current }; Check={ $output = powercfg /getactivescheme; if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return $false }; $q = powercfg /qh $guid 19cbb8fa-5279-450e-9fac-8a3d5fedd0c1 12bbebe6-58d6-4636-95bb-3217ef867c1a | Out-String; if ($q -match "Index:\s+0x0*([0-9a-fA-F]+)") { return ([Convert]::ToInt32($matches[1], 16) -eq 0) } return $false } }
     "HH_BtFix" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\BthPort\Parameters" "DisableSelectiveSuspend" 1 }; Revert={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\BthPort\Parameters" "DisableSelectiveSuspend" 0 }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Services\BthPort\Parameters" "DisableSelectiveSuspend" 1 } }
     "HH_CoreIso" = @{ Reboot=$true; Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" "Enabled" 0 }; Revert={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" "Enabled" 1 }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity" "Enabled" 0 } }
@@ -703,11 +724,16 @@ $RoninDB = @{
     "HH_Asus_AC" = @{ Apply={ Set-Service "ArmouryCrateService" -StartupType Manual }; Revert={ Set-Service "ArmouryCrateService" -StartupType Automatic }; Check={ $s=Get-Service "ArmouryCrateService" -ErrorAction SilentlyContinue; if ($s) { return ($s.StartType -ne "Automatic" -and $s.Status -ne "Running") } return $false } }
     "HH_Legion_Space" = @{ Apply={ Disable-Task "\" "LSDaemon"; Remove-Reg "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "LegionSpace"; Remove-Reg "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" "LegionSpace" }; Revert={ Enable-Task "\" "LSDaemon" }; Check={ $t = Get-ScheduledTask -TaskName "LSDaemon" -ErrorAction SilentlyContinue; $r1 = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).LegionSpace; $r2 = (Get-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -ErrorAction SilentlyContinue).LegionSpace; if ($t) { return ($t.State -eq "Disabled" -and $r1 -eq $null -and $r2 -eq $null) } return $false } }
     "HH_Msi_Center" = @{ Apply={ Set-Service "MSI_Central_Service" -StartupType Manual }; Check={ $s = Get-Service "MSI_Central_Service" -ErrorAction SilentlyContinue; if ($s) { return ($s.StartType -eq "Manual" -and $s.Status -ne "Running") } return $false } }
-    "HH_VMP" = @{ Reboot=$true; SlowCheck=$true; Apply={ Disable-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -NoRestart }; Check={ (Get-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform").State -eq "Disabled" } }
+    "HH_VMP" = @{ Reboot=$true; SlowCheck=$true; Apply={ Disable-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -NoRestart -ErrorAction SilentlyContinue }; Revert={ Enable-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -NoRestart -ErrorAction SilentlyContinue }; Check={ (Get-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -ErrorAction SilentlyContinue).State -eq "Disabled" } }
     "HH_CompactOS" = @{ SlowCheck=$true; Apply={ Start-Process "compact" "/CompactOS:always" -Wait -NoNewWindow }; Check={ (compact /CompactOS:query) -match "is in the Compact state" } }
     "HH_HiberReduced" = @{ SlowCheck=$true; Apply={ powercfg /h /type reduced }; Check={ (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Power" -Name "HiberFileType" -ErrorAction SilentlyContinue).HiberFileType -eq 2 } }
-    "HH_BoostMode" = @{ SlowCheck=$true; Apply={ param($v); powercfg /setacvalueindex scheme_current sub_processor be337238-0d82-4146-a960-4f3749d470c7 $v; powercfg /setactive scheme_current }; Check={ $v=2; try { $out = powercfg /qh scheme_current sub_processor be337238-0d82-4146-a960-4f3749d470c7 | Out-String; if($out -match "Index:\s+0x([0-9a-fA-F]+)"){ $v=[Convert]::ToInt32($matches[1],16) } } catch {}; return $v } }
-    "HH_EPP_Slicer" = @{ SlowCheck=$true; Apply={ param($v); $eppValue = switch($v){0{0}1{33}2{50}3{85}Default{50}}; powercfg /setacvalueindex scheme_current sub_processor 36687f9e-e3a5-4dbf-b1dc-15eb381c6863 $eppValue; powercfg /setactive scheme_current }; Check={ $val = (Get-EPP-Value); if($val -le 10){0}elseif($val -le 40){1}elseif($val -le 60){2}else{3} } }
+
+    "HH_BoostMode_AC" = @{ SlowCheck=$true; Apply={ param($v); powercfg /setacvalueindex scheme_current sub_processor be337238-0d82-4146-a960-4f3749d470c7 $v; powercfg /setactive scheme_current }; Check={ return (Get-CpuBoostMode "AC") } }
+    "HH_BoostMode_DC" = @{ SlowCheck=$true; Apply={ param($v); powercfg /setdcvalueindex scheme_current sub_processor be337238-0d82-4146-a960-4f3749d470c7 $v; powercfg /setactive scheme_current }; Check={ return (Get-CpuBoostMode "DC") } }
+    
+    # 5-TIER SHOGUN EPP MATH (0 = 0, 1 = 33, 2 = 50, 3 = 85, 4 = 100)
+    "HH_EPP_AC" = @{ SlowCheck=$true; Apply={ param($v); $epp = switch($v){0{0}1{33}2{50}3{85}4{100}Default{50}}; powercfg /setacvalueindex scheme_current sub_processor 36687f9e-e3a5-4dbf-b1dc-15eb381c6863 $epp; powercfg /setactive scheme_current }; Check={ $val=(Get-EPP-Value "AC"); if($val -le 10){0}elseif($val -le 40){1}elseif($val -le 60){2}elseif($val -le 90){3}else{4} } }
+    "HH_EPP_DC" = @{ SlowCheck=$true; Apply={ param($v); $epp = switch($v){0{0}1{33}2{50}3{85}4{100}Default{50}}; powercfg /setdcvalueindex scheme_current sub_processor 36687f9e-e3a5-4dbf-b1dc-15eb381c6863 $epp; powercfg /setactive scheme_current }; Check={ $val=(Get-EPP-Value "DC"); if($val -le 10){0}elseif($val -le 40){1}elseif($val -le 60){2}elseif($val -le 90){3}else{4} } }
 
     # --- ADVANCED ---
     "Adv_InputLatency" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Kbdclass\Parameters" "KeyboardDataQueueSize" 50 }; Revert={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Services\Kbdclass\Parameters" "KeyboardDataQueueSize" 100 }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Services\Kbdclass\Parameters" "KeyboardDataQueueSize" 50 } }
@@ -722,6 +748,9 @@ $RoninDB = @{
     "Adv_UTC" = @{ Apply={ Set-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" "RealTimeIsUniversal" 1 }; Revert={ Remove-Reg "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" "RealTimeIsUniversal" }; Check={ Test-Reg-Read "HKLM:\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" "RealTimeIsUniversal" 1 } }
     "Adv_Printing" = @{ Apply={ Stop-Service Spooler -Force; Set-Service Spooler -StartupType Disabled }; Revert={ Set-Service Spooler -StartupType Automatic; Start-Service Spooler }; Check={ $s = Get-Service Spooler -ErrorAction SilentlyContinue; if (!$s) { return $true }; return ($s.StartType -eq "Disabled" -and $s.Status -ne "Running") } }
     "Adv_ReservedStorage" = @{ SlowCheck=$true; Apply={ Start-Process "dism" -ArgumentList "/Online /Set-ReservedStorageState /State:Disabled" -Wait -NoNewWindow }; Revert={ Start-Process "dism" -ArgumentList "/Online /Set-ReservedStorageState /State:Enabled" -Wait -NoNewWindow }; Check={ (dism /online /Get-ReservedStorageState) -match "is disabled" } }
+    
+    "Adv_WSL" = @{ Reboot=$true; SlowCheck=$true; Apply={ Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -NoRestart -ErrorAction SilentlyContinue }; Revert={ Disable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -NoRestart -ErrorAction SilentlyContinue }; Check={ (Get-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -ErrorAction SilentlyContinue).State -eq "Enabled" } }
+    "Adv_HyperV" = @{ Reboot=$true; SlowCheck=$true; Apply={ Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V-All" -NoRestart -ErrorAction SilentlyContinue }; Revert={ Disable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V-All" -NoRestart -ErrorAction SilentlyContinue }; Check={ (Get-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V-All" -ErrorAction SilentlyContinue).State -eq "Enabled" } }
 }
 
 $AutoMap = @{ "Sys_VisualFX"="Auto_Visuals"; "Sys_DeviceInstall"="Auto_Drivers"; "Sys_RemoteAssist"="Auto_Remote"; "Sys_Recall"="Auto_Recall"; "Game_HAGS"="Auto_Hags"; "Game_GameMode"="Auto_GameMode"; "Sys_SysRestore"="Auto_SysRestore"; "Sys_UAC"="Auto_UAC"; "HH_CoreIso"="Auto_CoreIso"; "Priv_Tele"="Auto_Tele"; "Priv_AdID"="Auto_AdID"; "Priv_Loc"="Auto_Loc"; "Priv_Wifi"="Auto_Wifi"; "Priv_Bing"="Auto_Bing"; "Priv_Widgets"="Auto_Widgets"; "Priv_Copilot"="Auto_Copilot"; "Game_PCIe"="Auto_PCIe"; "Game_VariBright"="Auto_VariBright"; "Game_DPST"="Auto_DPST"; "Sys_AutoBright"="Auto_Bright"; "Priv_ConsumerFeatures"="Auto_Consumer"; "Priv_WER"="Auto_WER"; "Sys_CpuOpt"="Auto_CpuOpt"; "Sys_StartAds"="Auto_StartAds"; "Priv_ActivityUpload"="Auto_Activity" }

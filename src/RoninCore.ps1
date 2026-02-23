@@ -1,9 +1,4 @@
-# --- PROJECT RONIN: CORE ENGINE v7.0.0 "VANGUARD" ---
-# TARGET: Windows 11 24H2 & Legacy Support
-# STATUS: SECURITY FRIENDLY // STANDARDIZED
-# UPDATE: Reverted .NET VisualBasic sensors to standard CIM/WMI for AV transparency.
-# UPDATE: Added "UI Lockdown" Release Protocols maintained for Update-Tweaks/Apps.
-# PRIME DIRECTIVE: NO-REFACTOR (Stability & Explicit Binding).
+# --- PROJECT RONIN: CORE ENGINE v7.1.0 "SHOGUN EDITION" ---
 
 Add-Type -AssemblyName PresentationFramework, System.Windows.Forms, System.Drawing, WindowsBase
 
@@ -24,8 +19,21 @@ function Log ($Msg) {
     }) 
 }
 
+# --- DEFENSIVE ENGINEER FIX: PS 5.1 Compatible JSON Parsing ---
 if (Test-Path $Global:SnapshotFile) {
-    try { $Global:SnapshotCache = Get-Content $Global:SnapshotFile | ConvertFrom-Json -AsHashtable } catch {}
+    try { 
+        $jsonContent = Get-Content $Global:SnapshotFile -Raw
+        if (-not [string]::IsNullOrWhiteSpace($jsonContent)) {
+            $jsonObj = $jsonContent | ConvertFrom-Json
+            if ($jsonObj) {
+                $jsonObj.psobject.properties | ForEach-Object {
+                    $Global:SnapshotCache[$_.Name] = $_.Value
+                }
+            }
+        }
+    } catch { 
+        Log "Snapshot Warning: Failed to parse previous backups. Initiating fresh cache." 
+    }
 }
 
 function Backup-Value ($Path, $Name) {
@@ -77,7 +85,6 @@ function Restart-Explorer { Log "Executing Explorer Shell Refresh..."; Stop-Proc
 
 function Check-Internet { 
     if (Test-Connection 8.8.8.8 -Count 1 -Quiet) { return $true }
-    # 24H2 OPTIMIZATION: Reduced timeout to prevent UI thread hang if offline
     try { $r = Invoke-WebRequest "http://www.msftconnecttest.com/connecttest.txt" -UseBasicParsing -TimeoutSec 1; return ($r.StatusCode -eq 200) } catch { return $false }
 }
 
@@ -96,48 +103,39 @@ function Get-GpuRegistryPath ($VendorString) {
     } catch {}
     return $null
 }
-function Set-AMD-Feature ($FeatureName, $Val) { $path = Get-GpuRegistryPath "AMD"; if ($path) { Set-Reg $path $FeatureName $Val; Set-Reg "$path\UMD" $FeatureName $Val; Set-Reg $path "KMD_$FeatureName" $Val } }
 
-function Get-CpuBoostMode {
+function Get-CpuBoostMode ($State = "AC") {
     try {
-        $scheme = (powercfg /getactivescheme).Split()[3]
-        $out = powercfg /q $scheme sub_processor be337238-0d82-4146-a960-4f3749d470c7 | Out-String
-        if ($out -match "Current AC Power Setting Index:\s+0x([0-9a-fA-F]+)") {
+        $schemeOutput = powercfg /getactivescheme | Out-String
+        if ($schemeOutput -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return -1 }
+        
+        # MUST USE /qh for hidden processor settings
+        $out = powercfg /qh $guid sub_processor be337238-0d82-4146-a960-4f3749d470c7 | Out-String
+        if ($out -match "Current $State Power Setting Index:\s+0x([0-9a-fA-F]+)") {
             return [Convert]::ToInt32($matches[1], 16)
         }
     } catch {}
     return -1
 }
 
-function Get-EPP-Value {
+function Get-EPP-Value ($State = "AC") {
     try {
-        $output = powercfg /getactivescheme
-        if ($output -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return 50 }
+        $schemeOutput = powercfg /getactivescheme | Out-String
+        if ($schemeOutput -match "([a-fA-F0-9-]{36})") { $guid = $matches[1] } else { return 50 }
+        
+        # MUST USE /qh for hidden processor settings
         $out = powercfg /qh $guid sub_processor 36687f9e-e3a5-4dbf-b1dc-15eb381c6863 | Out-String
-        if ($out -match "Current AC Power Setting Index:\s+0x([0-9a-fA-F]+)") {
+        if ($out -match "Current $State Power Setting Index:\s+0x([0-9a-fA-F]+)") {
             return [Convert]::ToInt32($matches[1], 16)
         }
     } catch {}
     return 50 
 }
 
-function Ensure-PCIe-Visibility {
-    $Path = "HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings\501a4d13-42af-4429-9fd1-a8218c268e20\ee12f906-d277-404b-b6da-e5fa1a576df5"
-    try {
-        if (Test-Path $Path) {
-            $val = Get-ItemProperty -Path $Path -Name "Attributes" -ErrorAction SilentlyContinue
-            if (!$val -or $val.Attributes -eq 1) {
-                Set-ItemProperty -Path $Path -Name "Attributes" -Value 2 -Type DWord -Force
-            }
-        }
-    } catch {}
-}
-
 function Set-PCIe-Mode ($EnablePerformance) {
-    Ensure-PCIe-Visibility
     try {
         $schemeOutput = powercfg /getactivescheme | Out-String
-        if ($schemeOutput -match "GUID:\s+([a-fA-F0-9-]+)") {
+        if ($schemeOutput -match "([a-fA-F0-9-]{36})") {
             $activeScheme = $matches[1]
             $sub = "501a4d13-42af-4429-9fd1-a8218c268e20"
             $setting = "ee12f906-d277-404b-b6da-e5fa1a576df5"
@@ -156,11 +154,11 @@ function Set-PCIe-Mode ($EnablePerformance) {
 function Get-PCIe-State {
     try {
         $schemeOutput = powercfg /getactivescheme | Out-String
-        if ($schemeOutput -match "GUID:\s+([a-fA-F0-9-]+)") {
+        if ($schemeOutput -match "([a-fA-F0-9-]{36})") {
             $activeScheme = $matches[1]
             $sub = "501a4d13-42af-4429-9fd1-a8218c268e20"
             $setting = "ee12f906-d277-404b-b6da-e5fa1a576df5"
-            $out = powercfg /q $activeScheme $sub $setting | Out-String
+            $out = powercfg /qh $activeScheme $sub $setting | Out-String
             if ($out -match "Current AC Power Setting Index:\s+0x([0-9a-fA-F]+)") {
                 return [Convert]::ToInt32($matches[1], 16)
             }
@@ -169,25 +167,20 @@ function Get-PCIe-State {
     return -1
 }
 
+# --- AV SAFE SENSORS (Standard WMI/CIM Loop) ---
 function Update-Sensors {
     try {
         if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { return }
-        $ram = "..."
-        
-        # STANDARDIZED v7.0: Reverted to official CIM/WMI pathway.
-        # Following Winutil's lead to reduce low-level .NET calls that trigger AV flagging.
-        try {
-            $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
-            if ($os) {
-                $used = [Math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) / 1024 / 1024, 1)
-                $ram = "$used GB"
-            }
-        } catch { $ram = "Sensor Error" }
+        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+        if ($os) {
+            $used = [Math]::Round(($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) / 1048576, 1)
+            $ram = "$used GB"
+        } else { $ram = "..." }
         
         $SyncHash.Window.Dispatcher.Invoke({ 
             try { 
                 if ($SyncHash.RamStatus) { $SyncHash.RamStatus.Text = "RAM USAGE: $ram" }
-                if ($SyncHash.CpuStatus -and $script:CpuName) { $SyncHash.CpuStatus.Text = $script:CpuName }
+                if ($SyncHash.CpuStatus) { $SyncHash.CpuStatus.Text = $script:CpuName }
             } catch {} 
         })
     } catch {}
@@ -197,33 +190,22 @@ function Update-Apps {
     if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { return }
     Log "Scanning Installed Applications..."
     $results = @{}
-    $keys = $AppCheckMap.Keys | ForEach-Object { $_ }
-    foreach ($appKey in $keys) {
+    foreach ($appKey in $AppCheckMap.Keys) {
         try {
-            $isInstalled = Invoke-Command -ScriptBlock $AppCheckMap[$appKey]
-            $results[$appKey] = $isInstalled
+            $results[$appKey] = Invoke-Command -ScriptBlock $AppCheckMap[$appKey]
         } catch { $results[$appKey] = $false }
     }
-    if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { return }
     
     $SyncHash.Window.Dispatcher.Invoke([Action]{
         foreach ($appKey in $results.Keys) {
-            try {
-                $c = $SyncHash.Window.FindName($appKey)
-                if ($c) {
-                    if ($results[$appKey]) { $c.IsChecked = $true; $c.Foreground = [System.Windows.Media.Brushes]::LimeGreen; $c.ToolTip = "Status: INSTALLED" }
-                    else { $c.IsChecked = $false; $c.Foreground = [System.Windows.Media.Brushes]::Gray; $c.ToolTip = "Status: Not Installed" }
-                }
-            } catch {}
+            $c = $SyncHash.Window.FindName($appKey)
+            if ($null -ne $c) {
+                if ($results[$appKey]) { $c.IsChecked = $true; $c.Foreground = [System.Windows.Media.Brushes]::LimeGreen; $c.ToolTip = "Status: INSTALLED" }
+                else { $c.IsChecked = $false; $c.Foreground = [System.Windows.Media.Brushes]::Gray; $c.ToolTip = "Status: Not Installed" }
+            }
         }
-
-        # --- UI LOCKDOWN RELEASE PROTOCOL ---
         $tabs = $SyncHash.Window.FindName("MainTabs")
-        if ($tabs) { 
-            $tabs.IsEnabled = $true
-            $tabs.Opacity = 1.0 
-        }
-
+        if ($tabs) { $tabs.IsEnabled = $true; $tabs.Opacity = 1.0 }
     }, [System.Windows.Threading.DispatcherPriority]::ContextIdle)
     
     Log "App Scan Complete."
@@ -232,49 +214,75 @@ function Update-Apps {
 function Update-Tweaks {
     if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { return }
     Log "Auditing System State..."
-    $Status = @{} ; $totalActive = 0
+    $Status = @{} ; $totalActive = 0; $relevantDbSize = 0
     foreach ($k in $RoninDB.Keys) {
         if ($RoninDB[$k].Check) { 
             try { $Status[$k] = Invoke-Command -ScriptBlock $RoninDB[$k].Check } catch { $Status[$k] = $false }
         }
     }
-    if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { return }
     
     $SyncHash.Window.Dispatcher.Invoke([Action]{
+        # Detect Handheld Status once for math
+        $isHandheld = $false
+        try { 
+            $cimComp = Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue
+            if ($cimComp -and ($cimComp.Model -match "RC71|83[E-G]1|83S|Claw|Jupiter")) { $isHandheld = $true } 
+        } catch {}
+
         foreach ($k in $Status.Keys) {
-            try {
-                $c = $SyncHash.Window.FindName($k)
+            $c = $SyncHash.Window.FindName($k)
+            if ($null -ne $c) {
+                # Hardware Relevance Check
+                $isHardwareRelevant = $true
+                if ($k.StartsWith("HH_") -and -not $isHandheld) { $isHardwareRelevant = $false }
+
                 if ($c -is [System.Windows.Controls.CheckBox]) { 
                     $c.IsChecked = $Status[$k]
-                    if ($Status[$k]) { $c.Foreground = [System.Windows.Media.Brushes]::LimeGreen; $totalActive++ }
+                    if ($Status[$k]) { 
+                        $c.Foreground = [System.Windows.Media.Brushes]::LimeGreen
+                        if ($isHardwareRelevant) { $totalActive++ } 
+                    }
                     else { $c.Foreground = [System.Windows.Media.Brushes]::Gray }
+                    
+                    # DENOMINATOR: Only count CheckBoxes in the "Total" possible score
+                    if ($isHardwareRelevant) { $relevantDbSize++ }
                 }
-                elseif ($c -is [System.Windows.Controls.ComboBox]) { $c.SelectedIndex = $Status[$k] }
-            } catch {}
+                elseif ($c -is [System.Windows.Controls.ComboBox]) {
+                    # Update UI position but EXCLUDE from points math entirely
+                    if ($Status[$k] -ge 0) { $c.SelectedIndex = $Status[$k] }
+                }
+            }
         }
+        
+        # UI Profile Sync
         foreach ($sysKey in $AutoMap.Keys) {
-            try {
-                $autoControl = $SyncHash.Window.FindName($AutoMap[$sysKey])
-                if ($autoControl) {
-                    $autoControl.IsChecked = $Status[$sysKey]
-                    $autoControl.Foreground = if($Status[$sysKey]){ [System.Windows.Media.Brushes]::LimeGreen } else { [System.Windows.Media.Brushes]::Gray }
-                }
-            } catch {}
-        }
-        if ($SyncHash.HealthRank) {
-            $percent = [Math]::Min(100, ($totalActive / 35) * 100)
-            $SyncHash.HealthBar.Value = $percent
-            if ($totalActive -gt 18) { $SyncHash.HealthRank.Text = "SYSTEM RANK: S-TIER (OPTIMIZED)"; $SyncHash.HealthRank.Foreground = [System.Windows.Media.Brushes]::Cyan; $SyncHash.HealthBar.Foreground = [System.Windows.Media.Brushes]::Cyan }
-            elseif ($totalActive -gt 10) { $SyncHash.HealthRank.Text = "SYSTEM RANK: B-TIER (ACCEPTABLE)"; $SyncHash.HealthRank.Foreground = [System.Windows.Media.Brushes]::Yellow; $SyncHash.HealthBar.Foreground = [System.Windows.Media.Brushes]::Yellow }
-            else { $SyncHash.HealthRank.Text = "SYSTEM RANK: C-TIER (UNOPTIMIZED)"; $SyncHash.HealthRank.Foreground = [System.Windows.Media.Brushes]::Gray; $SyncHash.HealthBar.Foreground = [System.Windows.Media.Brushes]::Gray }
+            $autoC = $SyncHash.Window.FindName($AutoMap[$sysKey])
+            if ($null -ne $autoC) { $autoC.IsChecked = $Status[$sysKey]; $autoC.Foreground = if($Status[$sysKey]){ [System.Windows.Media.Brushes]::LimeGreen } else { [System.Windows.Media.Brushes]::Gray } }
         }
 
-        # --- UI LOCKDOWN RELEASE PROTOCOL ---
-        $tabs = $SyncHash.Window.FindName("MainTabs")
-        if ($tabs) { 
-            $tabs.IsEnabled = $true
-            $tabs.Opacity = 1.0 
+        # Final Rank Math
+        $dbSize = [Math]::Max(1, $relevantDbSize)
+        $percent = [Math]::Min(100, ($totalActive / $dbSize) * 100)
+        $SyncHash.HealthBar.Value = $percent
+        
+        if ($percent -ge 60) { 
+            $SyncHash.HealthRank.Text = "SYSTEM RANK: S-TIER (OPTIMIZED)"
+            $SyncHash.HealthRank.Foreground = [System.Windows.Media.Brushes]::Cyan
+            $SyncHash.HealthBar.Foreground = [System.Windows.Media.Brushes]::Cyan 
         }
+        elseif ($percent -ge 30) { 
+            $SyncHash.HealthRank.Text = "SYSTEM RANK: B-TIER (ACCEPTABLE)"
+            $SyncHash.HealthRank.Foreground = [System.Windows.Media.Brushes]::Yellow
+            $SyncHash.HealthBar.Foreground = [System.Windows.Media.Brushes]::Yellow 
+        }
+        else { 
+            $SyncHash.HealthRank.Text = "SYSTEM RANK: C-TIER (UNOPTIMIZED)"
+            $SyncHash.HealthRank.Foreground = [System.Windows.Media.Brushes]::Gray
+            $SyncHash.HealthBar.Foreground = [System.Windows.Media.Brushes]::Gray 
+        }
+
+        $tabs = $SyncHash.Window.FindName("MainTabs")
+        if ($tabs) { $tabs.IsEnabled = $true; $tabs.Opacity = 1.0 }
 
     }, [System.Windows.Threading.DispatcherPriority]::ContextIdle)
     
@@ -288,7 +296,9 @@ function Start-RoninLoop ($SyncHash) {
         if ($cpu) { $script:CpuName = $cpu.Name } else { $script:CpuName = "Unknown CPU" }
     } catch { $script:CpuName = "CPU Detection Failed" }
     if (!(Test-Path "$env:ProgramData\Ronin")) { New-Item -Path "$env:ProgramData\Ronin" -ItemType Directory -Force | Out-Null }
-    Log "Ronin Core v7.0 Online."
+    
+    Log "Ronin Core v7.1.0 Shogun Edition Online."
+    
     while ($SyncHash.Running) {
         Try {
             if ($SyncHash.Window.Dispatcher.HasShutdownStarted) { break }
@@ -296,7 +306,9 @@ function Start-RoninLoop ($SyncHash) {
                 $lastPowerEvent = Get-WinEvent -ProviderName "Microsoft-Windows-Kernel-Power" -MaxEvents 1 -ErrorAction SilentlyContinue
                 if ($lastPowerEvent -and $lastPowerEvent.Id -eq 506) { Start-Sleep -Seconds 5; continue }
             } catch {}
+            
             $SleepDuration = 1000 
+            
             if ($SyncHash.JobQueue.Count -gt 0) {
                 $SleepDuration = 50 
                 $job = $SyncHash.JobQueue.Dequeue()
@@ -319,21 +331,26 @@ function Start-RoninLoop ($SyncHash) {
                 }
                 elseif ($job -eq "REVERT_ALL") {
                     Log "REVERTING ALL CHANGES..."
+                    $SyncHash.Window.Dispatcher.Invoke({ 
+                        $tabs = $SyncHash.Window.FindName("MainTabs")
+                        if ($tabs) { $tabs.IsEnabled = $false; $tabs.Opacity = 0.5 }
+                    })
                     foreach ($key in $RoninDB.Keys) { if ($RoninDB[$key].Revert) { try { Invoke-Command -ScriptBlock $RoninDB[$key].Revert } catch {} } }
                     Update-Tweaks
                     Log "Revert Complete. Please Restart."
                 }
                 
-                # --- UNIFIED JOB PROCESSOR ---
                 elseif ($job -is [System.Collections.IEnumerable] -and $job -isnot [string] -and $job -isnot [System.Collections.DictionaryEntry]) {
-                    
                     if ($job.Count -gt 0) {
                         $firstItem = $job[0]
 
-                        # --- CASE A: APP INSTALLER (List of Strings) ---
                         if ($firstItem -is [string]) {
                             if (!$WingetMap) { Log "CRITICAL ERROR: Winget Database not loaded!"; continue }
                             if (Check-Internet) { 
+                                $SyncHash.Window.Dispatcher.Invoke({ 
+                                    $tabs = $SyncHash.Window.FindName("MainTabs")
+                                    if ($tabs) { $tabs.IsEnabled = $false; $tabs.Opacity = 0.5 }
+                                })
                                 foreach ($a in $job) { 
                                     if ($WingetMap[$a]) {
                                         $id = $WingetMap[$a]
@@ -346,8 +363,6 @@ function Start-RoninLoop ($SyncHash) {
                                             } catch {}
                                         }
                                         Log "$msg $a (ID: $id)..."
-                                        
-                                        # 24H2 FIX: Arguments quoted for CMD parsing safety
                                         $winArg = "$cmd --id $id --silent --accept-source-agreements --accept-package-agreements --force --include-unknown"
                                         Start-Process "cmd.exe" -ArgumentList "/c winget $winArg" -NoNewWindow -Wait
                                     } else {
@@ -357,22 +372,29 @@ function Start-RoninLoop ($SyncHash) {
                                 Log "Install Batch Complete."; Update-Apps
                             } else { Log "INSTALL ERROR: Internet Connection Required." }
                         }
-
-                        # --- CASE B: TWEAK PROCESSOR (List of Objects) ---
                         elseif ($firstItem -is [PSCustomObject] -or $firstItem -is [System.Collections.DictionaryEntry] -or $firstItem -is [System.Collections.Hashtable]) {
                             $SafeModeEnabled = $false
-                            $SyncHash.Window.Dispatcher.Invoke({ if ($SyncHash.SafeMode) { $SafeModeEnabled = $SyncHash.SafeMode.IsChecked } })
+                            $total = $job.Count
+                            
+                            $SyncHash.Window.Dispatcher.Invoke({ 
+                                if ($SyncHash.SafeMode) { $SafeModeEnabled = $SyncHash.SafeMode.IsChecked } 
+                                $SyncHash.ProgBar.Visibility = "Visible"
+                                $SyncHash.ProgBar.Maximum = $total
+                                $SyncHash.ProgBar.Value = 0
+                                $tabs = $SyncHash.Window.FindName("MainTabs")
+                                if ($tabs) { $tabs.IsEnabled = $false; $tabs.Opacity = 0.5 }
+                            })
+                            
                             if ($SafeModeEnabled) { 
                                 Log "Creating System Restore Point..."
                                 Checkpoint-Computer -Description "Ronin Pre-Flight" -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
                             }
-                            $count = 0; $total = $job.Count
+                            
+                            $count = 0
                             $rebootTriggered = $false
-                            $SyncHash.Window.Dispatcher.Invoke({ $SyncHash.ProgBar.Visibility = "Visible"; $SyncHash.ProgBar.Maximum = $total; $SyncHash.ProgBar.Value = 0 })
+                            
                             foreach ($taskItem in $job) {
                                 $count++; $SyncHash.Window.Dispatcher.Invoke({ $SyncHash.ProgBar.Value = $count })
-                                
-                                # 24H2 STABILITY: Thread yield to prevent UI freeze during heavy registry I/O
                                 if ($count % 5 -eq 0) { Start-Sleep -Milliseconds 2 }
 
                                 Try {
@@ -382,7 +404,11 @@ function Start-RoninLoop ($SyncHash) {
                                             $currentState = Invoke-Command -ScriptBlock $dbEntry.Check
                                             if ($taskItem.Action -eq "Apply") {
                                                 $target = if ($taskItem.Value -ne $null) { $taskItem.Value } else { $true }
-                                                if ("$currentState" -eq "$target") { Log "Skipping $target (Already Optimized)."; continue } 
+                                                if ($target -is [int] -and $target -lt 0) { 
+                                                    Log "Skipping $($taskItem.Key) (Invalid or Unselected State)."
+                                                    continue 
+                                                }
+                                                if ("$currentState" -eq "$target") { Log "Skipping $($taskItem.Key) (Already Optimized)."; continue } 
                                             } else {
                                                 if ("$currentState" -eq "$false") { Log "Skipping Rollback (Already at Default)."; continue }
                                             }
@@ -398,7 +424,10 @@ function Start-RoninLoop ($SyncHash) {
                                     }
                                 } Catch { Log "ERROR on $($taskItem.Key): $($_.Exception.Message)" }
                             }
+                            
+                            Start-Sleep -Milliseconds 750
                             Update-Tweaks
+                            
                             $SyncHash.Window.Dispatcher.Invoke({ 
                                 $SyncHash.ProgBar.Visibility = "Collapsed"
                                 if ($rebootTriggered -and $SyncHash.RebootBanner) { $SyncHash.RebootBanner.Visibility = "Visible" }
@@ -408,7 +437,6 @@ function Start-RoninLoop ($SyncHash) {
                     }
                 }
                 
-                # --- MAINTENANCE ---
                 elseif ($job -eq "MAINT_SFC") { Log "Running SFC..."; Start-Process "cmd.exe" -ArgumentList "/k sfc /scannow" }
                 elseif ($job -eq "MAINT_DISM") { Log "Running DISM..."; Start-Process "cmd.exe" -ArgumentList "/k dism /online /cleanup-image /restorehealth" }
                 elseif ($job -eq "MAINT_CLEAN") { Log "Cleaning Temp..."; Remove-Item "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue }
