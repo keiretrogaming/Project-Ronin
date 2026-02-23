@@ -3,17 +3,14 @@
 # ==============================================================================
 $ErrorActionPreference = "Stop"
 
-# Load all required assemblies before anything else runs
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName PresentationCore
-Add-Type -AssemblyName WindowsBase
+# Load Assemblies FIRST for stability 
+Add-Type -AssemblyName PresentationFramework, System.Windows.Forms, System.Drawing, WindowsBase
 
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Elevating Ronin to Administrator..." -ForegroundColor Cyan
-    $scriptUrl = "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/Ronin.ps1?t=$([guid]::NewGuid())"
-    $script = if ($PSCommandPath) { "& { & '$($PSCommandPath)' }" } else { "&([ScriptBlock]::Create((irm '$scriptUrl')))" }
-    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -WindowStyle Normal -Command `"$script`"" -Verb RunAs
+    $u = "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/Ronin.ps1"
+    $s = if ($PSCommandPath) { "& { & '$($PSCommandPath)' }" } else { "&([ScriptBlock]::Create((irm '$u')))" }
+    Start-Process powershell.exe -ArgumentList "-ExecutionPolicy Bypass -NoProfile -Command `"$s`"" -Verb RunAs
     exit
 }
 # --- PROJECT RONIN: CONTROLLER v7.1.0 ---
