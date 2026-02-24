@@ -1,12 +1,24 @@
 
 # Project Ronin
 
-### *A transparent, policy-driven optimization suite for Windows 11.*
+### *Reclaim your hardware. A one-click, policy-driven optimization suite for Windows 11.*
 
-**Project Ronin** is a comprehensive PowerShell utility designed to strip away Windows 11 telemetry, stabilize gaming frame times, and optimize windows handheld devices.
+I built Project Ronin for myself because I was tired of fighting my own computers. I’ve used amazing tools like WinUtil and Ultimate Windows Tweaker for years, but they never quite had *everything* I wanted in one place. I needed a single utility to repair Windows, check my SSD health, and clear out cluttered GPU driver caches without having to hunt through menus.
 
-Unlike "scorched-earth" debloaters that permanently delete system files and break Windows Update, Ronin uses official **Group Policies** and **Registry Flags** to ensure your system remains stable, secure, and entirely reversible.
+Visually, I wanted a clean, retro-cmd cyberpunk aesthetic—something that feels nostalgic, looks awesome but operates with modern efficiency. 
+
+The name Ronin implies a masterless samurai—you bought your hardware, so you should be the one in control of it, not Microsoft. If you paid for high-end silicon, you deserve 100% of its power! 
+
+Ronin uses official **Group Policies** and **Registry Flags** to ensure your system remains stable, secure, and entirely reversible.
 <img width="1664" height="1113" alt="image" src="https://github.com/user-attachments/assets/0b49822c-fa6f-4a3c-a999-c35da5e007fa" />
+
+---
+
+## Disclosure
+
+I’ve wanted to build an app like this for years, but the syntax of programming never quite "clicked" for me. I used an LM to bridge that gap and finally build this. However, I didn't just copy-paste. Every single tweak has been cross-referenced against trusted communities and tools like *ElevenForum* and *WinUtil*. 
+
+More importantly, I've personally verified these tweaks on my own fleet of Windows Devices: an **MSI Claw 8 AI**, a **2023 & 2025 Zephyrus G14**, and two custom desktops. My first priority to you is stability and transparency. There's a poetic irony in using AI to rip the unwanted AI features out of Windows, but it works beautifully.
 
 ---
 
@@ -15,11 +27,11 @@ Unlike "scorched-earth" debloaters that permanently delete system files and brea
 The fastest way to run Project Ronin. This command securely downloads the latest release into your temporary files, temporarily bypasses local execution policies, and launches the UI natively.
 
 1. Right-click the Windows Start button.
-2. Select **Terminal (Admin)** or **Windows PowerShell (Admin)**.
+2. Search for and select **Windows PowerShell (run as Admin)**.
 3. Paste the following command and press Enter:
 
 ```powershell
-irm "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1?$(Get-Random)" | iex
+irm "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1?$(Get-Random)" | iex 
 
 ```
 
@@ -50,23 +62,45 @@ Trust is built on transparency and the ability to roll back changes. Project Ron
 
 | Module | Purpose | Key Tweaks |
 | --- | --- | --- |
-| **Auto-Optimize** | The Baseline | Safe, high-impact defaults that work for 99% of users. |
+| **Auto-Optimize** | My Personal Baseline | Safe, high-impact defaults I put on every new machine I build. |
+
 <img width="1660" height="1111" alt="image" src="https://github.com/user-attachments/assets/e3b527b4-b822-42c4-97fa-8caa616215d2" />
 
+| Module | Purpose | Key Tweaks |
+| --- | --- | --- |
 | **System Core** | UI & Background | Fixes "Ghost Sleep," removes Start Menu ads, and streamlines Explorer. |
+
 <img width="1659" height="1108" alt="image" src="https://github.com/user-attachments/assets/50414530-3183-4d7e-a076-2017498fcf34" />
 
+| Module | Purpose | Key Tweaks |
+| --- | --- | --- |
 | **Gaming & GPU** | Latency & Stability | Sets HAGS/VRR flags and safely disables MPO to prevent flickering. |
+
 <img width="1665" height="1108" alt="image" src="https://github.com/user-attachments/assets/71f6a5da-98ea-42a6-b181-5e76c7ec5934" />
 
-| **Handheld** | Portable Devices | Fixes "Hot-Bag" issues by forcing Hibernate; optimizes CPU EPP. |
+| Module | Purpose | Key Tweaks |
+| --- | --- | --- |
+| **Handheld** | Portable Devices | **Essential for x86 Handhelds.** Fixes "Hot-Bag" issues by forcing Hibernate, disables encryption/VBS for APU gains, and checks battery health. |
+
 <img width="1669" height="1114" alt="image" src="https://github.com/user-attachments/assets/11d52281-ce66-41bc-bd20-a180675ab90b" />
 
-| **Privacy Shield** | Disables Recall AI, Copilot, and aggressive telemetry data-mining. |
+| Module | Purpose | Key Tweaks |
+| --- | --- | --- |
+| **Privacy Shield** | De-AI Windows | Strips out Recall AI, Copilot, and aggressive telemetry data-mining. |
+
 <img width="1664" height="1109" alt="image" src="https://github.com/user-attachments/assets/2add469c-ec66-4094-b68a-49833954f9b0" />
 
-| **Maintenance** | Diagnostics | One Click Repair for Windows 11, resets MS Store, and audits SSD health. |
+| Module | Purpose | Key Tweaks |
+| --- | --- | --- |
+| **Maintenance** | Diagnostics | My one-click cure-all. Repairs the Windows image, resets MS Store, clears GPU caches, and audits SSD health. |
+
 <img width="1660" height="1107" alt="image" src="https://github.com/user-attachments/assets/0d6a7d40-9179-4d33-aaa8-99cb26c77367" />
+
+---
+
+## 🗺️ Roadmap & Community
+
+My roadmap is whatever *you* want it to be! I built this to solve my own headaches, but if you have ideas, tweaks, or specific features you want to see added to Project Ronin, let me know. Drop a suggestion in the **Issues** tab!
 
 ---
 
@@ -74,16 +108,14 @@ Trust is built on transparency and the ability to roll back changes. Project Ron
 
 **Will this break Windows Update?** No. Project Ronin disables the *annoyances* of Windows Update (like forced auto-restarts and using your bandwidth to seed updates to other PCs via WUDO), but the core security patching engine remains fully intact.
 
-**Why is this a PowerShell script instead of an executable (.exe)?** Authenticity and security. An `.exe` is a black box. A `.ps1` file is plain text. You should never run a system-level optimizer if you cannot easily audit the code behind it.
+**Why not just use WinUtil?** I love WinUtil, but Ronin includes specific tools I wanted in a single click, like checking SSD health, resetting the GPU driver stack, and deep handheld-specific optimizations. WinUtil, while being amazing, never had everything that I wanted. 
 
-**Is this safe for Handhelds (MSI Claw, ROG Ally, Legion Go)?** Yes. Project Ronin automatically detects handheld hardware. The dedicated **Handheld** tab includes specific fixes for Modern Standby issues, custom EPP power slicing, and manufacturer bloatware management.
+**Is this safe for Handhelds (MSI Claw, ROG Ally, Legion Go)?** Absolutely. I'm a massive handheld fan, and Project Ronin automatically detects handheld hardware. The dedicated **Handheld** tab includes specific fixes for Modern Standby issues and custom EPP power slicing.
 
 ---
 
 ## ⚖️ Disclaimer
 
-*Project Ronin is shared as an open-source tool. While it is rigorously tested for stability, modifying system-level settings always carries a small inherent risk. Always maintain a current backup of your important files. Provided "as-is" under the MIT License.*
+*Project Ronin is shared as an open-source tool. I built it for myself, but modifying system-level settings always carries a small inherent risk. Always maintain a current backup of your important files. Provided "as-is" under the MIT License.*
 
 ---
-
-
