@@ -22,6 +22,27 @@ More importantly, I've personally verified these tweaks on my own fleet of Windo
 
 ---
 
+## ⚠️ Known Issues (PLEASE READ)
+
+*I’m currently hunting down fixes for these bugs for the upcoming Shogun release. In the meantime, definitely keep an eye on these before you start tweaking:*
+
+* **CRITICAL: The BitLocker "Black Screen" Trap**
+Disabling Device Encryption (Handheld Tab) happens silently in the background. **Don’t restart your device immediately.** Depending on your SSD, decryption can take anywhere from 10 minutes to an hour. If you reboot before it hits 0%, you’ll trip a BitLocker recovery loop—which usually looks like a scary black or sideways screen on handhelds like the ROG Ally.
+* **FIX:** If you run this tweak, manually open **Control Panel > BitLocker** and wait until it says "Fully Decrypted" before you even think about hitting restart.
+
+
+* **Core Isolation & VMP Boot Risks**
+Disabling Memory Integrity (HVCI) or the Virtual Machine Platform (VMP) changes how Windows handles its "trusted" boot environment. If your drive is still encrypted when you toggle these, Windows might get suspicious and lock you out on the next boot.
+* **FIX:** Always make sure your drive is 100% decrypted before messing with Core Isolation or VMP settings.
+
+
+* **Progress Bar Hijacking**
+If you start a long-running job (like a Full System Repair or Decryption) and then jump to another tab to apply more tweaks, the Progress Bar will get "hijacked" by the new tasks. The original task is still finishing in the background, but you won't be able to see its status anymore.
+* **The Hot-Bag Interlock**
+The "Hot-Bag Fix" (which forces your power button to Hibernate) relies on Windows Hibernation being turned on. If you disable Hibernation in the System tab, this fix might fail or cause your power button to act up when you toss your device in your bag.
+
+---
+
 ## 🚀 Quick Launch (No Download Required)
 
 The fastest way to run Project Ronin. This command securely downloads the latest release into your temporary files, temporarily bypasses local execution policies, and launches the UI natively.
@@ -119,3 +140,4 @@ My roadmap is whatever *you* want it to be! I built this to solve my own headach
 *Project Ronin is shared as an open-source tool. I built it for myself, but modifying system-level settings always carries a small inherent risk. Always maintain a current backup of your important files. Provided "as-is" under the MIT License.*
 
 ---
+
