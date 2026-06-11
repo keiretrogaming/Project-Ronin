@@ -14,5 +14,7 @@ if %errorLevel% == 0 (
 
 :RunRonin
 echo Launching Project Ronin...
-:: STANDARD PRACTICE: Removed Hidden flag to avoid AV "Evasion" triggers.
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0src\Ronin.ps1"
+:: Runs the self-contained monolith. -ExecutionPolicy Bypass is scoped to this process
+:: only and makes no permanent system change. No -WindowStyle Hidden, to avoid AV
+:: "evasion" heuristics.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Ronin.ps1"
