@@ -1,81 +1,68 @@
-
 # Project Ronin
 
-### *Reclaim your hardware. A one-click, policy-driven optimization suite for Windows 11.*
+### *Reclaim your hardware. A one-click optimization suite for Windows 11.*
 
-I built Project Ronin for myself because I was tired of fighting my own computers. I’ve used amazing tools like WinUtil and Ultimate Windows Tweaker for years, but they never quite had *everything* I wanted in one place. I needed a single utility to repair Windows, check my SSD health, and clear out cluttered GPU driver caches without having to hunt through menus.
+I built Project Ronin because I got tired of fighting my own computers. I've used great tools like WinUtil and Ultimate Windows Tweaker for years, but none of them had *everything* I wanted in one place. I kept bouncing between three apps just to repair Windows, check SSD health, and clear out a bloated GPU driver cache. So I made the tool I actually wanted.
 
-Visually, I wanted a clean, retro-cmd cyberpunk aesthetic—something that feels nostalgic, looks awesome but operates with modern efficiency. 
+It also had to look the part. The whole UI is a retro-cmd, cyberpunk styled. Nostalgic on the surface, modern underneath.
 
-The name Ronin implies a masterless samurai—you bought your hardware, so you should be the one in control of it, not Microsoft. If you paid for high-end silicon, you deserve 100% of its power! 
+The name is the point. A ronin is a masterless samurai. You bought your hardware, so you're the one who should control it, not Microsoft. You paid for the silicon, you should get all of it.
 
-Ronin uses official **Group Policies** and **Registry Flags** to ensure your system remains stable, secure, and entirely reversible.
+Everything runs through official **Group Policies** and **registry flags**, so your system stays stable, secure, and every change can be undone.
+
 <img width="1664" height="1113" alt="image" src="https://github.com/user-attachments/assets/0b49822c-fa6f-4a3c-a999-c35da5e007fa" />
 
 ---
 
 ## Disclosure
 
-I’ve wanted to build an app like this for years, but the syntax of programming never quite "clicked" for me. I used an LM to bridge that gap and finally build this. However, I didn't just copy-paste. Every single tweak has been cross-referenced against trusted communities and tools like *ElevenForum* and *WinUtil*. 
+I've wanted to build something like this for years, but programming syntax never clicked for me. I used an LM to bridge that gap. I didn't just copy-paste and hope for the best, though. Every tweak is cross-referenced against trusted sources like *ElevenForum* and *WinUtil*, and I run all of them on my own hardware: an **MSI Claw 8 AI**, a **2023 and 2025 Zephyrus G14**, and two custom desktops.
 
-More importantly, I've personally verified these tweaks on my own fleet of Windows Devices: an **MSI Claw 8 AI**, a **2023 & 2025 Zephyrus G14**, and two custom desktops. My first priority to you is stability and transparency. There's a poetic irony in using AI to rip the unwanted AI features out of Windows, but it works beautifully.
-
----
-
-## ⚠️ Known Issues (PLEASE READ)
-
-*I’m currently hunting down fixes for these bugs for the upcoming Shogun release. In the meantime, definitely keep an eye on these before you start tweaking:*
-
-* **CRITICAL: The BitLocker "Black Screen" Trap**
-Disabling Device Encryption (Handheld Tab) happens silently in the background. **Don’t restart your device immediately.** Depending on your SSD, decryption can take anywhere from 10 minutes to an hour. If you reboot before it hits 0%, you’ll trip a BitLocker recovery loop—which usually looks like a scary black or sideways screen on handhelds like the ROG Ally.
-* **FIX:** If you run this tweak, manually open **Control Panel > BitLocker** and wait until it says "Fully Decrypted" before you even think about hitting restart.
-
-
-* **Core Isolation & VMP Boot Risks**
-Disabling Memory Integrity (HVCI) or the Virtual Machine Platform (VMP) changes how Windows handles its "trusted" boot environment. If your drive is still encrypted when you toggle these, Windows might get suspicious and lock you out on the next boot.
-* **FIX:** Always make sure your drive is 100% decrypted before messing with Core Isolation or VMP settings.
-
-
-* **Progress Bar Hijacking**
-If you start a long-running job (like a Full System Repair or Decryption) and then jump to another tab to apply more tweaks, the Progress Bar will get "hijacked" by the new tasks. The original task is still finishing in the background, but you won't be able to see its status anymore.
-* **The Hot-Bag Interlock**
-The "Hot-Bag Fix" (which forces your power button to Hibernate) relies on Windows Hibernation being turned on. If you disable Hibernation in the System tab, this fix might fail or cause your power button to act up when you toss your device in your bag.
+Stability and transparency come first. And yes, there's a certain irony in using AI to rip the unwanted AI out of Windows. It works anyway.
 
 ---
 
-## 🚀 Quick Launch (No Download Required)
+## ⚠️ Read This Before Tweaking
 
-The fastest way to run Project Ronin. This command securely downloads the latest release into your temporary files, temporarily bypasses local execution policies, and launches the UI natively.
+Most of the scary stuff from older versions is now handled by the app itself, but you should still know how Windows behaves:
 
-1. Right-click the Windows Start button.
-2. Search for and select **Windows PowerShell (run as Admin)**.
-3. Paste the following command and press Enter:
+* **BitLocker decryption takes time.** Turning off Device Encryption (Handheld tab) decrypts your drive in the background, anywhere from 10 minutes to an hour depending on your SSD. Ronin now shows a live **"DO NOT RESTART - DECRYPTING [X%]"** banner and warns you if you try to close the app mid-decrypt. The rule still stands: **don't reboot until it hits 100%**, or you'll trip a BitLocker recovery screen (the infamous black/sideways screen on handhelds).
 
-```powershell
-irm "https://raw.githubusercontent.com/keiretrogaming/Project-Ronin/main/run.ps1?$(Get-Random)" | iex 
+* **Core Isolation & VMP are guarded now.** Toggling Memory Integrity (HVCI) or the Virtual Machine Platform while your drive is encrypted can lock you out on the next boot. Ronin automatically **skips these tweaks while BitLocker is active**, so you can't shoot yourself in the foot. Decrypt first, then toggle.
 
-```
+* **Known issue: progress bar hijacking.** If you start a long job (Full System Repair, decryption) and then fire off more tweaks from another tab, the new tasks take over the progress bar. The original job is still running fine in the background, you just lose the visual. On my list.
+
+* **The Hot-Bag interlock.** The Hot-Bag Fix (power button = Hibernate) needs Windows Hibernation enabled. If you've disabled Hibernation in the System tab, Ronin locks the Hot-Bag toggle and tells you why instead of letting it half-apply.
 
 ---
 
-## 📥 Manual Installation
+## 📥 Installation
 
-If you prefer to download the files and run them locally:
+Windows blocks files downloaded from the internet, and some antivirus side-eyes any system tweaker. Two steps and you're past all of it:
 
-1. Download the latest `.zip` from the releases tab and extract it.
-2. Double-click the **`Launch_Ronin.bat`** file.
-3. Accept the Administrator prompt. *(The batch file automatically handles PowerShell execution policies for you).*
+**1. Unblock the zip *before* extracting.**
+Right-click the downloaded `.zip` → **Properties** → tick **Unblock** at the bottom → **OK**. *Then* extract it. Doing it in this order clears the block on every file inside at once, so you never have to unblock anything one by one.
+
+> Already extracted? No problem. Open the folder, type `powershell` in the address bar, hit Enter, and run:
+> ```powershell
+> Get-ChildItem -Recurse | Unblock-File
+> ```
+
+**2. Run it.**
+Right-click **`Launch_Ronin.bat`** → **Run as administrator**. If a blue "Windows protected your PC" box pops up, click **More info → Run anyway**. That's standard for any new unsigned app.
+
+The launcher loosens the execution policy for that one window only. No permanent changes to your system, and everything Ronin does is reversible from inside the app.
 
 ---
 
 ## 🛡️ The Non-Destructive Optimization Policy
 
-Trust is built on transparency and the ability to roll back changes. Project Ronin is built on the following safety principles:
+Trust is built on transparency and the ability to roll back:
 
-* **Automatic Restore Points:** A system restore point is triggered before any major modifications are applied.
-* **Policy-Based Tweaks:** We use Group Policy and official Windows registry flags. Windows recognizes these changes as "intended settings" rather than corrupted files.
-* **Non-Destructive:** We do not delete `System32` components. If you want a feature back (like Windows Copilot or the Snap Flyout), you can simply toggle it back on.
-* **Hardware Aware:** The script checks your hardware ID on launch. It won't attempt to push NVIDIA-specific latency tweaks to an AMD-based handheld device.
+* **Automatic Restore Points:** Ronin triggers a system restore point before major modifications (and tells you plainly if Windows can't make one).
+* **Policy-Based Tweaks:** Group Policy and official registry flags. Windows treats these as intended settings, not corruption.
+* **Non-Destructive:** Nothing in `System32` gets deleted. Want Copilot or the Snap flyout back? Toggle it back on.
+* **Hardware Aware:** Ronin checks your hardware on launch. It won't push NVIDIA latency tweaks to an AMD handheld.
 
 ---
 
@@ -107,13 +94,13 @@ Trust is built on transparency and the ability to roll back changes. Project Ron
 
 | Module | Purpose | Key Tweaks |
 | --- | --- | --- |
-| **Privacy Shield** | De-AI Windows | Strips out Recall AI, Copilot, and aggressive telemetry data-mining. |
+| **Privacy Shield** | De-AI Windows | Strips out Recall AI, Copilot, and aggressive telemetry data-mining. Even blocks WPBT, the firmware trick vendors use to auto-install their software on clean installs. |
 
 <img width="1664" height="1109" alt="image" src="https://github.com/user-attachments/assets/2add469c-ec66-4094-b68a-49833954f9b0" />
 
 | Module | Purpose | Key Tweaks |
 | --- | --- | --- |
-| **Maintenance** | Diagnostics | My one-click cure-all. Repairs the Windows image, resets MS Store, clears GPU caches, and audits SSD health. |
+| **Maintenance** | Diagnostics | My one-click cure-all. Repairs the Windows image, resets MS Store, clears GPU caches, audits SSD health, and the new **Reclaim Space** deep clean typically frees 15-30+ GB. |
 
 <img width="1660" height="1107" alt="image" src="https://github.com/user-attachments/assets/0d6a7d40-9179-4d33-aaa8-99cb26c77367" />
 
@@ -121,23 +108,24 @@ Trust is built on transparency and the ability to roll back changes. Project Ron
 
 ## 🗺️ Roadmap & Community
 
-My roadmap is whatever *you* want it to be! I built this to solve my own headaches, but if you have ideas, tweaks, or specific features you want to see added to Project Ronin, let me know. Drop a suggestion in the **Issues** tab!
+Honestly, the roadmap is whatever you want it to be. I built this to solve my own headaches. If there's a tweak or feature you want in Ronin, drop it in the **Issues** tab and I'll take a look.
 
 ---
 
 ## ❓ Frequently Asked Questions
 
-**Will this break Windows Update?** No. Project Ronin disables the *annoyances* of Windows Update (like forced auto-restarts and using your bandwidth to seed updates to other PCs via WUDO), but the core security patching engine remains fully intact.
+**Will this break Windows Update?** No. Ronin kills the *annoyances* (forced auto-restarts, seeding updates to strangers via WUDO) but leaves the actual security patching alone.
 
-**Why not just use WinUtil?** I love WinUtil, but Ronin includes specific tools I wanted in a single click, like checking SSD health, resetting the GPU driver stack, and deep handheld-specific optimizations. WinUtil, while being amazing, never had everything that I wanted. 
+**My antivirus flagged it. Is it a virus?** No. Ronin edits deep Windows settings, which is exactly what heuristic scanners look for. There's no telemetry, no obfuscation, and every line of code is public in this repo for you to read. If your AV blocks it, that's a false positive you can report to Microsoft.
 
-**Is this safe for Handhelds (MSI Claw, ROG Ally, Legion Go)?** Absolutely. I'm a massive handheld fan, and Project Ronin automatically detects handheld hardware. The dedicated **Handheld** tab includes specific fixes for Modern Standby issues and custom EPP power slicing.
+**Why not just use WinUtil?** I love WinUtil. But Ronin bundles things I always wished it had in one click: SSD health checks, a full GPU driver-stack reset, and deep handheld tuning. WinUtil is amazing, it just never had *everything* I wanted.
+
+**Is this safe for Handhelds (MSI Claw, ROG Ally, Legion Go)?** That's the whole reason it exists. I'm a massive handheld fan, and Ronin auto-detects handheld hardware and opens a dedicated tab with Modern Standby fixes and custom EPP power slicing.
+
+**Where are the logs?** Click the green console in the bottom-left (or Maintenance → Open Logs & Backups). Every action gets logged, and `Ronin_StateReport.txt` shows exactly which tweaks are on or off right now.
 
 ---
 
 ## ⚖️ Disclaimer
 
-*Project Ronin is shared as an open-source tool. I built it for myself, but modifying system-level settings always carries a small inherent risk. Always maintain a current backup of your important files. Provided "as-is" under the MIT License.*
-
----
-
+*Project Ronin is open-source and shared as-is under the MIT License. I built it for myself and run it on my own machines, but system-level tweaking always carries some inherent risk. Keep a backup of anything you can't afford to lose.*
