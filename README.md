@@ -1,6 +1,17 @@
+<div align="center">
+
 # Project Ronin
 
 ### *Reclaim your hardware. A one-click optimization suite for Windows 11.*
+
+[![downloads](https://img.shields.io/github/downloads/keiretrogaming/Project-Ronin/total?label=downloads&labelColor=0B0D11&color=FF2E3A)](https://github.com/keiretrogaming/Project-Ronin/releases)
+[![release](https://img.shields.io/github/v/release/keiretrogaming/Project-Ronin?label=release&labelColor=0B0D11&color=FF2E3A)](https://github.com/keiretrogaming/Project-Ronin/releases/latest)
+![Windows 11](https://img.shields.io/badge/Windows-11-FF2E3A?labelColor=0B0D11)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1-FF2E3A?labelColor=0B0D11)
+![telemetry](https://img.shields.io/badge/telemetry-none-FF2E3A?labelColor=0B0D11)
+[![license](https://img.shields.io/github/license/keiretrogaming/Project-Ronin?label=license&labelColor=0B0D11&color=FF2E3A)](LICENSE)
+
+</div>
 
 I built Project Ronin because I got tired of fighting my own computers. I've used great tools like WinUtil and Ultimate Windows Tweaker for years, but none of them had *everything* I wanted in one place. I kept bouncing between three apps just to repair Windows, check SSD health, and clear out a bloated GPU driver cache. So I made the tool I actually wanted.
 
