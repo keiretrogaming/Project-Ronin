@@ -1,11 +1,31 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="PROJECT RONIN // Definitive Edition (v7.3.1)" Height="730" Width="1100"
+        Title="PROJECT RONIN // Definitive Edition (v8.0.0)" Height="760" Width="1100"
         WindowStartupLocation="CenterScreen" ResizeMode="CanResize"
-        Background="Transparent" Foreground="#E0E0E0" FontFamily="Segoe UI"
+        Background="Transparent" Foreground="#E6EAEE" FontFamily="Segoe UI Variable Text, Segoe UI"
         MinWidth="800" MinHeight="450" WindowStyle="None" AllowsTransparency="True">
 
     <Window.Resources>
+        <!-- 8.0 BLACK ICE. Every font here ships with Windows 11 (Cascadia Mono, Bahnschrift, Segoe UI Variable),
+             with Consolas / Segoe UI as fallbacks: nothing is bundled. Height went 730 -> 760 for the status bar,
+             so no tab is drawn smaller than in 7.6. -->
+        <SolidColorBrush x:Key="Accent" Color="#FF2E3A"/>
+        <SolidColorBrush x:Key="Amber" Color="#F2A93B"/>
+        <FontFamily x:Key="Mono">Cascadia Mono, Consolas</FontFamily>
+        <FontFamily x:Key="Cond">Bahnschrift, Segoe UI</FontFamily>
+        <LinearGradientBrush x:Key="OnFill" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#14FF2E3A" Offset="0"/><GradientStop Color="#A0FF2E3A" Offset="1"/>
+        </LinearGradientBrush>
+        <!-- queued (changed here, not applied yet): amber hazard stripes -->
+        <LinearGradientBrush x:Key="HazardAmber" MappingMode="Absolute" StartPoint="0,0" EndPoint="4,4" SpreadMethod="Repeat">
+            <GradientStop Color="#66F2A93B" Offset="0"/><GradientStop Color="#66F2A93B" Offset="0.5"/>
+            <GradientStop Color="#00F2A93B" Offset="0.5"/><GradientStop Color="#00F2A93B" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="HazardInk" MappingMode="Absolute" StartPoint="0,0" EndPoint="5,5" SpreadMethod="Repeat">
+            <GradientStop Color="#12030A" Offset="0"/><GradientStop Color="#12030A" Offset="0.5"/>
+            <GradientStop Color="#0012030A" Offset="0.5"/><GradientStop Color="#0012030A" Offset="1"/>
+        </LinearGradientBrush>
+
         <Style TargetType="{x:Type ScrollViewer}">
             <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
             <Setter Property="Padding" Value="0"/>
@@ -20,11 +40,25 @@
             </Setter>
         </Style>
 
+        <!-- Cards: dark gradient, hairline border lit red at two corners (top-left, bottom-right). -->
         <Style x:Key="CardBorder" TargetType="Border">
-            <Setter Property="Background" Value="#161616"/>
-            <Setter Property="BorderBrush" Value="#333"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#F7111318" Offset="0"/><GradientStop Color="#F70A0B0E" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#D0FF2E3A" Offset="0"/><GradientStop Color="#1D2128" Offset="0.07"/>
+                        <GradientStop Color="#1D2128" Offset="0.93"/><GradientStop Color="#D0FF2E3A" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="2"/>
             <Setter Property="Padding" Value="12"/>
             <Setter Property="Margin" Value="0,0,10,10"/>
         </Style>
@@ -35,21 +69,21 @@
                     <ColumnDefinition />
                     <ColumnDefinition Width="20" />
                 </Grid.ColumnDefinitions>
-                <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="4" Background="#161616" BorderBrush="#333" BorderThickness="1" />
-                <Path x:Name="Arrow" Grid.Column="1" Fill="#888" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z"/>
+                <Border x:Name="Border" Grid.ColumnSpan="2" CornerRadius="2" Background="#0B0D11" BorderBrush="#2A3038" BorderThickness="1" />
+                <Path x:Name="Arrow" Grid.Column="1" Fill="#8A939E" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4 4 L 8 0 Z"/>
             </Grid>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="Border" Property="BorderBrush" Value="#FF2E2E"/>
-                    <Setter TargetName="Arrow" Property="Fill" Value="#FF2E2E"/>
+                    <Setter TargetName="Border" Property="BorderBrush" Value="#FF2E3A"/>
+                    <Setter TargetName="Arrow" Property="Fill" Value="#FF2E3A"/>
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
         <Style x:Key="DarkComboStyle" TargetType="{x:Type ComboBox}">
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="#333"/>
-            <Setter Property="Background" Value="#161616"/>
+            <Setter Property="BorderBrush" Value="#2A3038"/>
+            <Setter Property="Background" Value="#0B0D11"/>
             <Setter Property="SnapsToDevicePixels" Value="true"/>
             <Setter Property="OverridesDefaultStyle" Value="true"/>
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
@@ -66,7 +100,7 @@
                             <TextBox x:Name="PART_EditableTextBox" Style="{x:Null}" Template="{x:Null}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="3,3,23,3" Focusable="True" Background="Transparent" Visibility="Hidden" IsReadOnly="{TemplateBinding IsReadOnly}"/>
                             <Popup Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
                                 <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                    <Border x:Name="DropDownBorder" Background="#161616" BorderThickness="1" BorderBrush="#FF2E2E"/>
+                                    <Border x:Name="DropDownBorder" Background="#0B0D11" BorderThickness="1" BorderBrush="#FF2E3A"/>
                                     <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
                                         <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                     </ScrollViewer>
@@ -79,9 +113,9 @@
         </Style>
 
         <Style TargetType="ComboBoxItem">
-            <Setter Property="Foreground" Value="#CCCCCC"/>
-            <Setter Property="Background" Value="#161616"/>
-            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="Foreground" Value="#C9D0D7"/>
+            <Setter Property="Background" Value="#0B0D11"/>
+            <Setter Property="FontFamily" Value="{StaticResource Mono}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -93,11 +127,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="#2A0000"/>
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#2A0B0F"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="#3A0000"/>
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#3A0E13"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -106,8 +140,11 @@
             </Setter>
         </Style>
 
+        <!-- Tweak switch. ON = red glow; Tag "Q" = changed here but not applied yet (amber hazard stripes,
+             the thumb already where Apply will put it). Label colour follows the switch, so code must not set
+             a tweak checkbox's Foreground (a local value would override these triggers). -->
         <Style TargetType="CheckBox">
-            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Foreground" Value="#9AA3AD"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Margin" Value="0,2"/> <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -115,30 +152,40 @@
                     <ControlTemplate TargetType="CheckBox">
                         <Grid Background="Transparent">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Border x:Name="Track" Grid.Column="0" Width="36" Height="18" CornerRadius="9" Background="#111" BorderBrush="#333" BorderThickness="1" Margin="0,0,10,0">
-                                <Rectangle x:Name="Thumb" Width="10" Height="10" RadiusX="5" RadiusY="5" Fill="#555" HorizontalAlignment="Left" Margin="4,0">
-                                    <Rectangle.Effect><DropShadowEffect ShadowDepth="0" BlurRadius="4" Color="Black" Opacity="0.5"/></Rectangle.Effect>
-                                </Rectangle>
+                            <Border x:Name="Track" Grid.Column="0" Width="30" Height="14" CornerRadius="2" Background="#090B0E" BorderBrush="#2E343C" BorderThickness="1" Margin="0,0,10,0" VerticalAlignment="Center" ClipToBounds="True">
+                                <Grid>
+                                    <Border x:Name="Fill" Background="{StaticResource OnFill}" Visibility="Collapsed"/>
+                                    <Rectangle x:Name="Thumb" Width="5" Height="8" RadiusX="1" RadiusY="1" Fill="#4A525C" HorizontalAlignment="Left" Margin="2,0"/>
+                                </Grid>
                             </Border>
                             <ContentPresenter x:Name="ContentText" Grid.Column="1" VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Track" Property="Background" Value="#2A0000"/>
-                                <Setter TargetName="Track" Property="BorderBrush" Value="#FF2E2E"/>
-                                <Setter TargetName="Track" Property="Effect">
-                                    <Setter.Value><DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="#FF2E2E" Opacity="0.4"/></Setter.Value>
-                                </Setter>
-                                <Setter TargetName="Thumb" Property="Fill" Value="#FF2E2E"/>
+                                <Setter TargetName="Track" Property="BorderBrush" Value="#FF2E3A"/>
+                                <Setter TargetName="Fill" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="Thumb" Property="Fill" Value="#FFF4F4"/>
                                 <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter TargetName="Thumb" Property="Effect">
-                                    <Setter.Value><DropShadowEffect ShadowDepth="0" BlurRadius="8" Color="#FF2E2E" Opacity="0.8"/></Setter.Value>
+                                <Setter TargetName="Track" Property="Effect">
+                                    <Setter.Value><DropShadowEffect ShadowDepth="0" BlurRadius="8" Color="#FF2E3A" Opacity="0.4"/></Setter.Value>
                                 </Setter>
+                                <Setter Property="Foreground" Value="#E6EAEE"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="Q">
+                                <Setter TargetName="Track" Property="BorderBrush" Value="#F2A93B"/>
+                                <Setter TargetName="Track" Property="Background" Value="{StaticResource HazardAmber}"/>
+                                <Setter TargetName="Fill" Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="Thumb" Property="Fill" Value="#FFD089"/>
+                                <Setter TargetName="Track" Property="Effect">
+                                    <Setter.Value><DropShadowEffect ShadowDepth="0" BlurRadius="8" Color="#F2A93B" Opacity="0.35"/></Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ContentText" Property="Opacity" Value="0.85"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Track" Property="Opacity" Value="0.3"/>
-                                <Setter Property="Foreground" Value="#444"/>
+                                <Setter Property="Foreground" Value="#4A525C"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -146,46 +193,62 @@
             </Setter>
         </Style>
 
+        <!-- Sidebar nav. TabIndex doubles as the 01-08 index; Update-TabUI shows ActiveBg/AccentBar on the
+             current tab and writes the per-tab "on/total" count into Count. -->
         <Style TargetType="Button" x:Key="NavBtn">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#888"/>
-            <Setter Property="FontSize" Value="15"/> 
-            <Setter Property="Height" Value="48"/>   <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Foreground" Value="#8A939E"/>
+            <Setter Property="FontFamily" Value="{StaticResource Cond}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="20,0,0,0"/>
+            <Setter Property="Padding" Value="12,0,0,0"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid Background="{TemplateBinding Background}">
-                            <Rectangle x:Name="AccentBar" HorizontalAlignment="Left" Width="4" Fill="#FF2E2E" Visibility="Collapsed">
-                                <Rectangle.Effect><DropShadowEffect Color="#FF2E2E" BlurRadius="12" ShadowDepth="0"/></Rectangle.Effect>
+                            <Grid x:Name="ActiveBg" Visibility="Collapsed">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/></Grid.ColumnDefinitions>
+                                <Rectangle>
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#4DFF2E3A" Offset="0"/><GradientStop Color="#12FF2E3A" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                                <Path Grid.Column="1" Stretch="Fill" Fill="#12FF2E3A" Data="M0,0 L12,17 L0,34 Z"/>
+                            </Grid>
+                            <Rectangle x:Name="AccentBar" HorizontalAlignment="Left" Width="2" Fill="#FF2E3A" Visibility="Collapsed">
+                                <Rectangle.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="10" ShadowDepth="0"/></Rectangle.Effect>
                             </Rectangle>
                             <StackPanel Orientation="Horizontal" Margin="{TemplateBinding Padding}" VerticalAlignment="Center">
-                                <TextBlock Text="{TemplateBinding Tag}" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,2,15,0" Width="20" TextAlignment="Center"/>
-                                <ContentPresenter VerticalAlignment="Center" TextElement.FontWeight="SemiBold"/>
+                                <TextBlock x:Name="Idx" Text="{Binding TabIndex, RelativeSource={RelativeSource TemplatedParent}, StringFormat={}{0:00}}" FontFamily="{StaticResource Mono}" FontSize="9.5" Width="20" Foreground="#5C6570" VerticalAlignment="Center"/>
+                                <TextBlock Text="{TemplateBinding Tag}" FontFamily="Segoe MDL2 Assets" FontSize="15" Margin="0,1,11,0" Width="18" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <ContentPresenter VerticalAlignment="Center"/>
                             </StackPanel>
+                            <TextBlock x:Name="Count" Text="" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0" FontFamily="{StaticResource Mono}" FontSize="10" Foreground="#7D8692"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#15FFFFFF"/>
+                                <Setter Property="Background" Value="#0DFFFFFF"/>
                                 <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="Cursor" Value="Hand"/>
-                                <Setter TargetName="AccentBar" Property="Visibility" Value="Visible"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <Style TargetType="Button" x:Key="WindowControlBtn">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#888"/>
+            <Setter Property="Foreground" Value="#8A939E"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="32"/>
+            <Setter Property="Height" Value="34"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -194,7 +257,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#33FFFFFF"/>
+                                <Setter Property="Background" Value="#22FFFFFF"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -203,14 +266,124 @@
             </Setter>
         </Style>
 
-        <Style TargetType="TextBlock" x:Key="H1">
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="Foreground" Value="#FF2E2E"/>
+        <!-- Outline button (secondary actions). -->
+        <Style TargetType="Button" x:Key="GhostBtn">
+            <Setter Property="Background" Value="#0B0D11"/>
+            <Setter Property="Foreground" Value="#C9D0D7"/>
+            <Setter Property="BorderBrush" Value="#2A3038"/>
+            <Setter Property="FontFamily" Value="{StaticResource Mono}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bdr" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bdr" Property="BorderBrush" Value="#FF2E3A"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bdr" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Apply buttons: angled red slab. Code shows "Hazard" (black stripes) while the tab has queued
+             changes; Background still follows the button (Firebrick while a preview waits for its confirm). -->
+        <Style TargetType="Button" x:Key="ApplyBtn">
+            <Setter Property="Background" Value="#FF2E3A"/>
+            <Setter Property="Foreground" Value="#12030A"/>
+            <Setter Property="FontFamily" Value="{StaticResource Mono}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="Root">
+                            <Grid.Effect><DropShadowEffect ShadowDepth="0" BlurRadius="16" Color="#FF2E3A" Opacity="0.35"/></Grid.Effect>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="11"/></Grid.ColumnDefinitions>
+                            <Rectangle Grid.Column="0" Fill="{TemplateBinding Background}"/>
+                            <Path Grid.Column="1" Stretch="Fill" Fill="{TemplateBinding Background}" Data="M0,0 L11,0 L11,33 L0,44 Z"/>
+                            <Rectangle x:Name="Hazard" Grid.Column="0" Width="18" HorizontalAlignment="Left" Fill="{StaticResource HazardInk}" Visibility="Collapsed"/>
+                            <ContentPresenter Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12,0"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Root" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 8.0: compact launcher buttons (Declutter > Windows Tools). Tag = the command to run. -->
+        <Style TargetType="Button" x:Key="ToolBtn">
+            <Setter Property="Background" Value="#0E1015"/>
+            <Setter Property="Foreground" Value="#BBC2C9"/>
+            <Setter Property="FontSize" Value="9.5"/>
             <Setter Property="FontFamily" Value="Consolas"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Margin" Value="0,0,0,8"/> 
-            <Setter Property="Effect">
-                <Setter.Value><DropShadowEffect Color="#FF2E2E" BlurRadius="10" ShadowDepth="0" Opacity="0.3"/></Setter.Value>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Margin" Value="0,0,4,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bdr" Background="{TemplateBinding Background}" BorderBrush="#262B33" BorderThickness="1" CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bdr" Property="BorderBrush" Value="#FF2E3A"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Section heading: red angled chip, title, hairline. A ContentControl (not a TextBlock) so it can draw
+             the chip; Foreground still tints the title where a section sets it. -->
+        <Style TargetType="ContentControl" x:Key="H1">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="#E6EAEE"/>
+            <Setter Property="FontFamily" Value="{StaticResource Mono}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Grid Width="24" Height="15" VerticalAlignment="Center" Margin="0,0,8,0">
+                                <Path Data="M0,0 L24,0 L18,15 L0,15 Z" Fill="#FF2E3A"/>
+                                <TextBlock Text="//" FontFamily="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="#12030A" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </Grid>
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center"/>
+                            <Rectangle Grid.Column="2" Height="1" Fill="#1F242B" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
             </Setter>
         </Style>
 
@@ -220,20 +393,175 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
+
+        <Style TargetType="TextBlock" x:Key="KpiLabel">
+            <Setter Property="FontFamily" Value="{StaticResource Mono}"/>
+            <Setter Property="FontSize" Value="8.5"/>
+            <Setter Property="Foreground" Value="#7D8692"/>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="KpiValue">
+            <Setter Property="FontFamily" Value="{StaticResource Cond}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="21"/>
+            <Setter Property="Foreground" Value="#7D8692"/>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="StatusText">
+            <Setter Property="FontFamily" Value="{StaticResource Mono}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="Foreground" Value="#7D8692"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- No stock Windows chrome. A button without a style of its own (Maintenance, DNS, Debloat / Startup / Install
+             Apps, banner and Settings buttons, the Changes list's UNDO) used Windows' template: hovering one turned it
+             light blue under white text. Each keeps its own Background / Foreground / BorderBrush; hover = red edge + lift. -->
+        <Style TargetType="Button">
+            <Setter Property="BorderBrush" Value="#2A3038"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="Bdr" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2" SnapsToDevicePixels="True"/>
+                            <Border x:Name="Lift" Background="#14FFFFFF" CornerRadius="2" Visibility="Collapsed"/>
+                            <ContentPresenter x:Name="Cp" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True" SnapsToDevicePixels="True"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bdr" Property="BorderBrush" Value="#FF2E3A"/>
+                                <Setter TargetName="Lift" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Lift" Property="Background" Value="#33000000"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bdr" Property="Opacity" Value="0.45"/>
+                                <Setter TargetName="Cp" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Tooltips: dark, wrapped, instead of Windows' light grey box over a black UI. -->
+        <Style TargetType="ToolTip">
+            <Setter Property="Foreground" Value="#D5DBE1"/>
+            <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="MaxWidth" Value="420"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="#F70B0D11" BorderBrush="#5A1C22" BorderThickness="1" CornerRadius="2" Padding="9,6">
+                            <ContentPresenter>
+                                <ContentPresenter.Resources>
+                                    <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+                                </ContentPresenter.Resources>
+                            </ContentPresenter>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dialog lists (Install Apps has 40+ apps): a thin dark scrollbar instead of Windows' light grey one.
+             Keyed, so the main window (whose scroll areas hide their bars) is untouched; Set-DialogLook makes it
+             the dialogs' implicit ScrollBar style. Vertical only - no dialog scrolls sideways. -->
+        <Style x:Key="DlgScrollBar" TargetType="ScrollBar">
+            <Setter Property="Width" Value="6"/>
+            <Setter Property="MinWidth" Value="6"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Border Background="#0F1216" CornerRadius="3">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb Cursor="Hand">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border x:Name="T" Background="#2E343C" CornerRadius="3"/>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="T" Property="Background" Value="#FF2E3A"/></Trigger>
+                                                    <Trigger Property="IsDragging" Value="True"><Setter TargetName="T" Property="Background" Value="#FF2E3A"/></Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
-    <Border Background="#F2050505" BorderBrush="#FF2E2E" BorderThickness="1" CornerRadius="8">
+    <Border x:Name="RootFrame" CornerRadius="8" BorderThickness="1">
+        <Border.BorderBrush>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#FF2E3A" Offset="0"/><GradientStop Color="#262B33" Offset="0.12"/>
+                <GradientStop Color="#262B33" Offset="0.88"/><GradientStop Color="#99FF2E3A" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.BorderBrush>
+        <Border.Background>
+            <!-- faint dot grid -->
+            <DrawingBrush TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute" Viewbox="0,0,16,16" ViewboxUnits="Absolute">
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+                        <GeometryDrawing Brush="#F806070A"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,16,16"/></GeometryDrawing.Geometry></GeometryDrawing>
+                        <GeometryDrawing Brush="#14FFFFFF"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,1,1"/></GeometryDrawing.Geometry></GeometryDrawing>
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+        </Border.Background>
         <Border.Effect>
             <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="0" Opacity="0.8"/>
         </Border.Effect>
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="32"/> <RowDefinition Height="*"/>  </Grid.RowDefinitions>
+                <RowDefinition Height="34"/> <RowDefinition Height="*"/> <RowDefinition Height="26"/> </Grid.RowDefinitions>
 
-            <Grid x:Name="TitleBar" Grid.Row="0" Background="#00000000">
-                <TextBlock Text="PROJECT RONIN // v7.3.1" Foreground="#666" FontSize="10" FontFamily="Consolas" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <!-- TITLE BAR (drag area): brand | search | engine state + window buttons -->
+            <Grid x:Name="TitleBar" Grid.Row="0" Background="#E6050608">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="236"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Rectangle Grid.ColumnSpan="3" Height="1" VerticalAlignment="Bottom" IsHitTestVisible="False">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#00FF2E3A" Offset="0"/><GradientStop Color="#C0FF2E3A" Offset="0.18"/>
+                            <GradientStop Color="#C0FF2E3A" Offset="0.4"/><GradientStop Color="#00FF2E3A" Offset="0.75"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="15,0,0,0" IsHitTestVisible="False">
+                    <Rectangle Width="7" Height="7" Fill="{StaticResource Accent}" Margin="0,0,11,0" RenderTransformOrigin="0.5,0.5" VerticalAlignment="Center">
+                        <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
+                        <Rectangle.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="10" ShadowDepth="0" Opacity="0.9"/></Rectangle.Effect>
+                    </Rectangle>
+                    <TextBlock Text="PROJECT RONIN" Style="{StaticResource StatusText}" Foreground="#8A939E"/>
+                    <TextBlock Text=" // " Style="{StaticResource StatusText}" Foreground="#4A525C"/>
+                    <TextBlock Text="v8.0.0" Style="{StaticResource StatusText}" Foreground="#C9D0D7"/>
+                </StackPanel>
+                <Border Grid.Column="1" MaxWidth="380" Height="24" HorizontalAlignment="Stretch" Margin="0,0,14,0" Background="#0B0D11" BorderBrush="#1E232A" BorderThickness="1" CornerRadius="3" ToolTip="Search every tab (Ctrl+K)">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="&#x203A;" Foreground="{StaticResource Accent}" FontFamily="{StaticResource Mono}" FontSize="14" Margin="9,0,4,2" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                        <TextBlock x:Name="SearchPlaceholder" Grid.Column="1" Text="search tweaks..." Foreground="#5C6570" FontFamily="{StaticResource Mono}" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" IsHitTestVisible="False" TextTrimming="CharacterEllipsis"/>
+                        <TextBox x:Name="SearchBox" Grid.Column="1" Background="Transparent" Foreground="White" BorderThickness="0" Padding="0" VerticalContentAlignment="Center" CaretBrush="#FF2E3A" FontFamily="{StaticResource Mono}" FontSize="11"/>
+                        <Border Grid.Column="2" BorderBrush="#2A3038" BorderThickness="1" CornerRadius="2" Padding="5,0" Margin="4,0,5,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <TextBlock Text="CTRL K" FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692"/>
+                        </Border>
+                    </Grid>
+                </Border>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse x:Name="Dot_Engine" Width="6" Height="6" Fill="#5BD68A" VerticalAlignment="Center" Margin="0,0,7,0">
+                        <Ellipse.Effect><DropShadowEffect Color="#5BD68A" BlurRadius="8" ShadowDepth="0" Opacity="0.9"/></Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock x:Name="Txt_EngineState" Text="ENGINE ONLINE" Style="{StaticResource StatusText}" Foreground="#7FD9A0" Margin="0,0,12,0"/>
+                    <Button x:Name="Btn_RestartExp" Content="RESTART EXPLORER" Style="{StaticResource GhostBtn}" Height="22" FontSize="9.5" Padding="8,0" Margin="0,0,6,0" ToolTip="Restart Windows Explorer now (taskbar, Start, File Explorer) so shell changes show."/>
+                    <Button x:Name="Btn_Settings" Content="&#xE713;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource WindowControlBtn}" ToolTip="Settings"/>
                     <Button x:Name="Btn_Min" Content="&#xE921;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource WindowControlBtn}"/>
                     <Button x:Name="Btn_Close" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource WindowControlBtn}">
                         <Button.Triggers>
@@ -249,7 +577,7 @@
                                  <BeginStoryboard>
                                      <Storyboard>
                                          <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)" To="Transparent" Duration="0:0:0.2"/>
-                                         <ColorAnimation Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)" To="#888" Duration="0:0:0.2"/>
+                                         <ColorAnimation Storyboard.TargetProperty="(Button.Foreground).(SolidColorBrush.Color)" To="#8A939E" Duration="0:0:0.2"/>
                                      </Storyboard>
                                  </BeginStoryboard>
                              </EventTrigger>
@@ -260,111 +588,209 @@
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="236"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="#CC080808" CornerRadius="0,0,0,8" BorderBrush="#333" BorderThickness="0,1,1,0">
-                    <Grid>
-                        <Rectangle HorizontalAlignment="Right" Width="1" Fill="#FF2E2E" Opacity="0.3"/>
-                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top" HorizontalAlignment="Left">
-                            <Grid Width="280">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/> <RowDefinition Height="Auto"/> <RowDefinition Height="Auto"/> </Grid.RowDefinitions>
+                <Border Grid.Column="0" BorderBrush="#161A20" BorderThickness="0,0,1,0">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#F70B0C10" Offset="0"/><GradientStop Color="#F707080B" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top" HorizontalAlignment="Left">
+                        <Grid Width="236">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/> <RowDefinition Height="Auto"/> <RowDefinition Height="Auto"/> </Grid.RowDefinitions>
 
-                                <StackPanel Grid.Row="0" Margin="0,15,0,5">
-                                    <StackPanel Margin="25,0,0,0">
-                                        <TextBlock Text="P R O J E C T" FontSize="11" Foreground="#666" FontFamily="Consolas"/>
-                                        <TextBlock Text="RONIN" FontSize="48" FontWeight="Black" Foreground="#FF2E2E" Margin="-2,-10,0,0" FontFamily="Impact">
-                                            <TextBlock.Effect><DropShadowEffect Color="#FF2E2E" BlurRadius="25" ShadowDepth="0" Opacity="0.6"/></TextBlock.Effect>
-                                        </TextBlock>
-                                        <TextBlock Text="DEFINITIVE EDITION // v7.3.1" FontSize="10" Foreground="#555" Margin="2,-5,0,15" FontWeight="Bold" FontFamily="Consolas"/>
-                                    </StackPanel>
+                            <!-- LOGO: RONIN cut by a katana stroke (two clipped copies, the lower half nudged) -->
+                            <StackPanel Grid.Row="0" Margin="18,16,14,0">
+                                <TextBlock Text="P R O J E C T" FontFamily="{StaticResource Mono}" FontSize="9.5" Foreground="#7D8692"/>
+                                <Grid Width="200" Height="50" HorizontalAlignment="Left" Margin="-2,2,0,0" IsHitTestVisible="False">
+                                    <TextBlock Text="RONIN" FontFamily="{StaticResource Cond}" FontStretch="Condensed" FontWeight="Bold" FontSize="56" Foreground="{StaticResource Accent}" Margin="0,-12,0,0">
+                                        <TextBlock.Clip><PathGeometry Figures="M-20,-20 L220,-20 L220,20 L-20,34 Z"/></TextBlock.Clip>
+                                        <TextBlock.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="20" ShadowDepth="0" Opacity="0.55"/></TextBlock.Effect>
+                                    </TextBlock>
+                                    <TextBlock Text="RONIN" FontFamily="{StaticResource Cond}" FontStretch="Condensed" FontWeight="Bold" FontSize="56" Foreground="{StaticResource Accent}" Margin="0,-12,0,0">
+                                        <TextBlock.Clip><PathGeometry Figures="M-20,34 L220,20 L220,120 L-20,120 Z"/></TextBlock.Clip>
+                                        <TextBlock.RenderTransform><TranslateTransform X="4" Y="2"/></TextBlock.RenderTransform>
+                                        <TextBlock.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="20" ShadowDepth="0" Opacity="0.55"/></TextBlock.Effect>
+                                    </TextBlock>
+                                    <Rectangle Width="196" Height="1.2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-6,21,0,0">
+                                        <Rectangle.RenderTransform><RotateTransform Angle="-3.3"/></Rectangle.RenderTransform>
+                                        <Rectangle.Fill>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="#00FFFFFF" Offset="0"/><GradientStop Color="#FFFFFFFF" Offset="0.12"/>
+                                                <GradientStop Color="#FFFF2E3A" Offset="0.45"/><GradientStop Color="#00FF2E3A" Offset="0.85"/>
+                                            </LinearGradientBrush>
+                                        </Rectangle.Fill>
+                                        <Rectangle.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="8" ShadowDepth="0" Opacity="1"/></Rectangle.Effect>
+                                    </Rectangle>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock Text="DEFINITIVE EDITION" FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692" VerticalAlignment="Center"/>
+                                    <Border Background="{StaticResource Accent}" Padding="4,0" Margin="7,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="v8.0.0" FontFamily="{StaticResource Mono}" FontSize="9" FontWeight="Bold" Foreground="#12030A"/>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
 
-                                    <Border Background="#151515" CornerRadius="4" Margin="20,0,20,0" BorderBrush="#333" BorderThickness="1">
+                            <StackPanel Grid.Row="1" Margin="0,14,8,0">
+                                <Button x:Name="Nav_Auto" TabIndex="1" Content="AUTO OPTIMIZE" Style="{StaticResource NavBtn}" Tag="&#xE80F;" ToolTip="Quickly apply recommended profiles."/>
+                                <Button x:Name="Nav_System" TabIndex="2" Content="SYSTEM CORE" Style="{StaticResource NavBtn}" Tag="&#xE770;" ToolTip="Essential Windows configurations."/>
+                                <Button x:Name="Nav_Gaming" TabIndex="3" Content="GAMING &amp; GPU" Style="{StaticResource NavBtn}" Tag="&#xE7FC;" ToolTip="Optimize for frames and latency."/>
+                                <Button x:Name="Nav_Handheld" TabIndex="4" Content="HANDHELD" Style="{StaticResource NavBtn}" Tag="&#xE76E;" ToolTip="ROG Ally / Legion Go / Claw Tools."/>
+                                <Button x:Name="Nav_Privacy" TabIndex="5" Content="PRIVACY SHIELD" Style="{StaticResource NavBtn}" Tag="&#xE72E;" ToolTip="Block telemetry and data collection."/>
+                                <Button x:Name="Nav_Declutter" TabIndex="6" Content="DECLUTTER" Style="{StaticResource NavBtn}" Tag="&#xE71C;" ToolTip="Ads, nags, Windows Update control, startup apps and quick tools."/>
+                                <Button x:Name="Nav_Advanced" TabIndex="7" Content="ADVANCED TOOLS" Style="{StaticResource NavBtn}" Tag="&#xE90F;" ToolTip="Expert-level system tweaks."/>
+                                <Button x:Name="Nav_Maint" TabIndex="8" Content="MAINTENANCE" Style="{StaticResource NavBtn}" Tag="&#xE9E9;" ToolTip="Repair and clean the system."/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Margin="14,14,14,12">
+                                <!-- RANK: hex badge + tier + C/B/A/S ladder. The engine sets Txt_HealthRank/HealthBar in the audit
+                                     and asks the UI (mailbox 'RANK') to paint the badge, note and ladder. -->
+                                <Border x:Name="RankCard" BorderBrush="#1B1F26" BorderThickness="1" CornerRadius="2" Padding="11,10,11,9" Margin="0,0,0,12">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#17FF2E3A" Offset="0"/><GradientStop Color="#E60B0D10" Offset="0.55"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
                                         <Grid>
-                                            <TextBlock x:Name="SearchPlaceholder" Text="SEARCH PROTOCOLS..." Foreground="#444" VerticalAlignment="Center" Margin="10,0" IsHitTestVisible="False" FontSize="10" FontWeight="Bold" FontFamily="Consolas"/>
-                                            <TextBox x:Name="SearchBox" Background="Transparent" Foreground="White" BorderThickness="0" Padding="8,8" CaretBrush="#FF2E2E" FontFamily="Consolas"/>
-                                        </Grid>
-                                    </Border>
-
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="1" Margin="0,5,0,10">
-                                    <Button x:Name="Nav_Auto" Content="AUTO OPTIMIZE" Style="{StaticResource NavBtn}" Tag="&#xE80F;" ToolTip="Quickly apply recommended profiles."/>
-                                    <Button x:Name="Nav_System" Content="SYSTEM CORE" Style="{StaticResource NavBtn}" Tag="&#xE770;" ToolTip="Essential Windows configurations."/>
-                                    <Button x:Name="Nav_Gaming" Content="GAMING &amp; GPU" Style="{StaticResource NavBtn}" Tag="&#xE7FC;" ToolTip="Optimize for frames and latency."/>
-                                    <Button x:Name="Nav_Handheld" Content="HANDHELD" Style="{StaticResource NavBtn}" Tag="&#xE76E;" ToolTip="ROG Ally / Legion Go / Claw Tools."/>
-                                    <Button x:Name="Nav_Privacy" Content="PRIVACY SHIELD" Style="{StaticResource NavBtn}" Tag="&#xE72E;" ToolTip="Block telemetry and data collection."/>
-                                    <Button x:Name="Nav_Advanced" Content="ADVANCED TOOLS" Style="{StaticResource NavBtn}" Tag="&#xE90F;" ToolTip="Expert-level system tweaks."/>
-                                    <Button x:Name="Nav_Maint" Content="MAINTENANCE" Style="{StaticResource NavBtn}" Tag="&#xE9E9;" ToolTip="Repair and clean the system."/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="2" Margin="20,0,20,15">
-                                    <Border Background="#151515" Padding="10" BorderBrush="#222" BorderThickness="1" CornerRadius="4" Margin="0,0,0,10">
-                                        <StackPanel>
-                                            <TextBlock x:Name="Txt_HealthRank" Text="SYSTEM: CALIBRATING..." FontSize="10" FontWeight="Bold" Foreground="#444" FontFamily="Consolas" Margin="0,0,0,4"/>
-                                            <ProgressBar x:Name="HealthBar" Height="3" Background="#111" Foreground="#FF2E2E" BorderThickness="0" Value="0" Margin="0,0,0,6"/>
-                                            <StackPanel>
-                                                <TextBlock x:Name="Txt_RamStatus" Text="RAM: ..." FontSize="10" Foreground="#888" FontFamily="Consolas" Margin="0,0,0,2"/>
-                                                <TextBlock x:Name="Txt_CpuStatus" Text="CPU: ..." FontSize="10" Foreground="#666" FontFamily="Consolas" TextTrimming="CharacterEllipsis"/>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                            <Grid x:Name="Rank_Badge" Width="44" Height="50">
+                                                <Grid.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="12" ShadowDepth="0" Opacity="0"/></Grid.Effect>
+                                                <Path x:Name="Rank_Hex" Data="M22,0 L44,12.5 L44,37.5 L22,50 L0,37.5 L0,12.5 Z" Fill="#3A4048"/>
+                                                <TextBlock x:Name="Txt_RankLetter" Text="?" FontFamily="{StaticResource Cond}" FontWeight="Bold" FontSize="28" Foreground="#12030A" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,2"/>
+                                            </Grid>
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="SYSTEM RANK" FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692"/>
+                                                <TextBlock x:Name="Txt_HealthRank" Text="CALIBRATING" FontFamily="{StaticResource Cond}" FontWeight="SemiBold" FontSize="18" Foreground="#F2F4F6" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock x:Name="Txt_RankNote" Text="first audit running..." FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692" TextTrimming="CharacterEllipsis"/>
                                             </StackPanel>
-                                        </StackPanel>
-                                    </Border>
+                                        </Grid>
+                                        <UniformGrid Rows="1" Columns="4" Margin="0,9,0,0">
+                                            <Border x:Name="Rank_C" Height="16" Margin="0,0,3,0" Background="#14FFFFFF"><TextBlock Text="C" FontFamily="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="#5C6570" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                            <Border x:Name="Rank_B" Height="16" Margin="0,0,3,0" Background="#14FFFFFF"><TextBlock Text="B" FontFamily="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="#5C6570" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                            <Border x:Name="Rank_A" Height="16" Margin="0,0,3,0" Background="#14FFFFFF"><TextBlock Text="A" FontFamily="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="#5C6570" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                            <Border x:Name="Rank_S" Height="16" Background="#14FFFFFF"><TextBlock Text="S" FontFamily="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="#5C6570" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        </UniformGrid>
+                                        <ProgressBar x:Name="HealthBar" Height="2" Background="#1B1F26" Foreground="#FF2E3A" BorderThickness="0" Value="0" Margin="0,7,0,0"/>
+                                    </StackPanel>
+                                </Border>
 
-                                    <TextBlock Text="GLOBAL CONFIG" FontSize="9" Foreground="#444" FontWeight="Bold" FontFamily="Consolas" Margin="0,0,0,2"/>
-                                    <CheckBox x:Name="Global_TouchMode" Content="Touch Mode" FontSize="12" ToolTip="Enlarges UI elements for easier touch use."/>
-                                    <CheckBox x:Name="Global_SafeMode" Content="Auto-Backup" IsChecked="True" FontSize="12" ToolTip="Creates a Restore Point before applying tweaks."/>
-                                    <CheckBox x:Name="Global_ExpertMode" Content="Expert Mode" FontSize="12" Foreground="#AA4444" ToolTip="Unlocks dangerous tweaks.&#x0a;Use with caution."/>
+                                <TextBlock Text="GLOBAL CONFIG" FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692" Margin="0,0,0,3"/>
+                                <CheckBox x:Name="Global_TouchMode" Content="Touch Mode" FontSize="12" ToolTip="Enlarges UI elements for easier touch use."/>
+                                <CheckBox x:Name="Global_SafeMode" Content="Auto-Backup" IsChecked="True" FontSize="12" ToolTip="Creates a Restore Point before applying tweaks."/>
+                                <CheckBox x:Name="Global_ExpertMode" Content="Expert Mode" FontSize="12" Foreground="#E0A458" ToolTip="Unlocks dangerous tweaks.&#x0a;Use with caution."/>
 
-                                    <Button x:Name="Btn_Analyze" Content="RUN SYSTEM AUDIT" Background="#161616" Foreground="White" FontWeight="Bold" Height="36" Margin="0,8,0,8" Cursor="Hand" BorderBrush="#333" BorderThickness="1" FontFamily="Consolas" ToolTip="Re-scans the system state.">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border x:Name="Bdr" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="4">
-                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Button x:Name="Btn_Analyze" Content="RUN SYSTEM AUDIT" Height="34" Margin="0,12,0,4" Cursor="Hand" FontFamily="{StaticResource Mono}" FontSize="11" FontWeight="SemiBold" Foreground="#F2F4F6" ToolTip="Re-scans the system state.">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Grid>
+                                                <Border x:Name="Bdr" Background="#0B0D11" BorderThickness="1">
+                                                    <Border.BorderBrush>
+                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                            <GradientStop Color="#FF2E3A" Offset="0"/><GradientStop Color="#2A3038" Offset="0.7"/>
+                                                        </LinearGradientBrush>
+                                                    </Border.BorderBrush>
                                                 </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Bdr" Property="BorderBrush" Value="#FF2E2E"/>
-                                                        <Setter Property="Foreground" Value="#FF2E2E"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
-                                    
-                                    <ProgressBar x:Name="ProgBar" Height="2" Margin="0,0,0,5" Background="Transparent" Foreground="#FF2E2E" BorderThickness="0" Visibility="Collapsed"/>
+                                                <Path Data="M10,0 L10,10 L0,10 Z" Fill="#08090C" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="10" Height="10" Stretch="Fill" Margin="0,0,-0.5,-0.5"/>
+                                                <StackPanel Orientation="Horizontal" Margin="12,0" VerticalAlignment="Center">
+                                                    <Path x:Name="Play" Data="M0,0 L9,5.5 L0,11 Z" Fill="#FF2E3A" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <TextBlock Text="F5" FontFamily="Cascadia Mono, Consolas" FontSize="9" Foreground="#5C6570" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bdr" Property="Background" Value="#16080B"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
 
-                                    <Border Height="40" Background="Black" BorderBrush="#222" BorderThickness="1" CornerRadius="4">
-                                        <ScrollViewer x:Name="ConsoleScroll" VerticalScrollBarVisibility="Hidden">
-                                            <TextBlock x:Name="ConsoleOutput" Text="> RONIN ENGINE 7.1 ONLINE..." Foreground="#00FF00" FontFamily="Consolas" FontSize="10" Padding="4" TextWrapping="Wrap"/>
-                                        </ScrollViewer>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-                        </Viewbox>
-                    </Grid>
+                                <ProgressBar x:Name="ProgBar" Height="2" Margin="0,2,0,0" Background="Transparent" Foreground="#FF2E3A" BorderThickness="0" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Grid>
+                    </Viewbox>
                 </Border>
 
-                <Grid Grid.Column="1" Background="Transparent">
+                <Grid Grid.Column="1" Background="Transparent" ClipToBounds="True">
                     <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <!-- a faint red glow behind the header -->
+                    <Ellipse Grid.Row="0" Width="640" Height="380" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-160,-190,0,0" IsHitTestVisible="False">
+                        <Ellipse.Fill>
+                            <RadialGradientBrush><GradientStop Color="#1CFF2E3A" Offset="0"/><GradientStop Color="#00FF2E3A" Offset="1"/></RadialGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
 
                     <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <Grid Width="820"> 
-                            <TabControl x:Name="MainTabs" BorderThickness="0" Background="Transparent" SelectedIndex="0" Margin="30,15,30,10">
-                                <TabControl.Resources><Style TargetType="TabItem"><Setter Property="Visibility" Value="Collapsed"/></Style></TabControl.Resources>
+                        <Grid Width="864">
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
 
+                            <!-- SHARED TAB HEADER (8.0 Black Ice). Update-TabHeader fills it on every tab change; the KPI
+                                 tiles count the current tab's switches (on / queued / queued-that-need-a-reboot). -->
+                            <Grid x:Name="Hdr" Grid.Row="0" Margin="26,6,26,0">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <!-- zero-size canvas: the outlined word never takes part in layout and is never clipped -->
+                                <Canvas Grid.ColumnSpan="2" Width="0" Height="0" HorizontalAlignment="Right" VerticalAlignment="Top" IsHitTestVisible="False">
+                                    <Path x:Name="Hdr_Ghost" Canvas.Right="-4" Canvas.Top="-8" Stroke="#1CFFFFFF" StrokeThickness="1"/>
+                                </Canvas>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Bottom">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="/" FontFamily="{StaticResource Cond}" FontStretch="SemiCondensed" FontWeight="SemiBold" FontSize="36" Foreground="{StaticResource Accent}" Margin="0,0,11,0">
+                                            <TextBlock.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="14" ShadowDepth="0" Opacity="0.6"/></TextBlock.Effect>
+                                        </TextBlock>
+                                        <TextBlock x:Name="Hdr_Title" Text="AUTO OPTIMIZE" FontFamily="{StaticResource Cond}" FontStretch="SemiCondensed" FontWeight="SemiBold" FontSize="36" Foreground="#F4F6F8"/>
+                                        <Rectangle x:Name="Hdr_Cursor" Width="12" Height="27" Fill="{StaticResource Accent}" Margin="10,3,0,0" VerticalAlignment="Center">
+                                            <Rectangle.Effect><DropShadowEffect Color="#FF2E3A" BlurRadius="12" ShadowDepth="0" Opacity="0.7"/></Rectangle.Effect>
+                                        </Rectangle>
+                                    </StackPanel>
+                                    <TextBlock x:Name="Hdr_Sub" Text="" FontSize="12.5" Foreground="#8A939E" Margin="1,0,0,0" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="12,0,0,2">
+                                    <Button x:Name="Btn_Discard" Content="DISCARD" Style="{StaticResource GhostBtn}" Height="46" Margin="0,0,8,0" Visibility="Collapsed" ToolTip="Put this tab's switches back to how this PC is set right now. Nothing is changed on the PC."/>
+                                    <Grid Width="86" Margin="0,0,8,0">
+                                        <Border Background="#EB0B0D11" BorderBrush="#1B1F26" BorderThickness="1"/>
+                                        <Rectangle x:Name="KpiBar_Active" Height="2" VerticalAlignment="Top" Fill="{StaticResource Accent}"/>
+                                        <StackPanel Margin="10,7,8,5">
+                                            <TextBlock Text="ACTIVE" Style="{StaticResource KpiLabel}"/>
+                                            <TextBlock x:Name="Kpi_Active" Text="--" Style="{StaticResource KpiValue}" Foreground="#F4F6F8"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid Width="86" Margin="0,0,8,0">
+                                        <Border Background="#EB0B0D11" BorderBrush="#1B1F26" BorderThickness="1"/>
+                                        <Rectangle x:Name="KpiBar_Queued" Height="2" VerticalAlignment="Top" Fill="#2E343C"/>
+                                        <StackPanel Margin="10,7,8,5">
+                                            <TextBlock Text="QUEUED" Style="{StaticResource KpiLabel}"/>
+                                            <TextBlock x:Name="Kpi_Queued" Text="0" Style="{StaticResource KpiValue}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <Grid Width="86">
+                                        <Border Background="#EB0B0D11" BorderBrush="#1B1F26" BorderThickness="1"/>
+                                        <Rectangle x:Name="KpiBar_Reboot" Height="2" VerticalAlignment="Top" Fill="#2E343C"/>
+                                        <StackPanel Margin="10,7,8,5">
+                                            <TextBlock Text="REBOOT" Style="{StaticResource KpiLabel}"/>
+                                            <TextBlock x:Name="Kpi_Reboot" Text="0" Style="{StaticResource KpiValue}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+
+                            <TabControl x:Name="MainTabs" Grid.Row="1" BorderThickness="0" Background="Transparent" SelectedIndex="0" Margin="26,10,26,6">
+                                <TabControl.Resources><Style TargetType="TabItem"><Setter Property="Visibility" Value="Collapsed"/></Style></TabControl.Resources>
                                 <TabItem x:Name="Tab_Auto">
                                     <StackPanel>
-                                        <TextBlock Text="AUTO_OPTIMIZE" FontSize="36" FontWeight="Thin" Foreground="White" FontFamily="Consolas"/>
-                                        <TextBlock Text="Standard Issue: The Ronin Core Protocol for all operatives." Foreground="#888" Margin="0,0,0,15"/>
                                         <Border Background="#990A0A0A" Padding="25" BorderBrush="#333" BorderThickness="1" CornerRadius="6">
                                             <Grid>
                                                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                              
                                                 <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,20,0">
-                                                    <TextBlock Text="PERFORMANCE" Style="{StaticResource H1}" Margin="0,0,0,5"/>
+                                                    <ContentControl Content="PERFORMANCE" Style="{StaticResource H1}" Margin="0,0,0,5"/>
                                                     <CheckBox x:Name="Auto_Visuals" Content="Apply 'Ronin' Visuals" IsChecked="True" ToolTip="Adjusts Windows animations for speed."/>
                                                     <CheckBox x:Name="Auto_SysRestore" Content="Disable System Restore" ToolTip="Saves space/cycles, but WARNING: this also disables Ronin's own Auto-Backup restore points. Leave unchecked unless storage is critical."/>
                                                     <CheckBox x:Name="Auto_Remote" Content="Disable Remote Assistance" IsChecked="True" ToolTip="Security hardening against remote access."/>
@@ -378,14 +804,14 @@
                                                     <CheckBox x:Name="Auto_CpuOpt" Content="Smart CPU Efficiency" IsChecked="True" ToolTip="Optimizes processor power management."/>
                                                     <CheckBox x:Name="Auto_StartAds" Content="Disable System-Wide Ads" IsChecked="True" ToolTip="Blocks ads in Start, Lock Screen, Settings, and Explorer."/>
                                                     
-                                                    <TextBlock Text="HARDWARE" Style="{StaticResource H1}" Margin="0,15,0,5"/>
+                                                    <ContentControl Content="HARDWARE" Style="{StaticResource H1}" Margin="0,15,0,5"/>
                                                     <CheckBox x:Name="Auto_PCIe" Content="Disable PCIe Power Saving" IsChecked="True" ToolTip="CRITICAL: Forces L0 state to fix gaming micro-stutters."/>
                                                     <CheckBox x:Name="Auto_VariBright" Content="Disable AMD Vari-Bright" IsChecked="True" ToolTip="Fixes washed out colors on battery (AMD Only)."/>
                                                     <CheckBox x:Name="Auto_DPST" Content="Disable Intel DPST" IsChecked="True" Visibility="Collapsed" ToolTip="Fixes washed out colors/brightness on battery (Intel Only)."/>
                                                 </StackPanel>
                                               
                                                 <StackPanel Grid.Row="1" Grid.Column="1" Margin="20,0,0,0">
-                                                    <TextBlock Text="PRIVACY" Style="{StaticResource H1}" Margin="0,0,0,5" Foreground="#66c0f4"/>
+                                                    <ContentControl Content="PRIVACY" Style="{StaticResource H1}" Margin="0,0,0,5" Foreground="#66c0f4"/>
                                                     <CheckBox x:Name="Auto_Tele" Content="Disable Telemetry &amp; Data" IsChecked="True" ToolTip="Blocks basic Windows diagnostic data."/>
                                                     <CheckBox x:Name="Auto_Activity" Content="Disable Activity History" IsChecked="True" ToolTip="Stops Timeline activity tracking."/>
                                                     <CheckBox x:Name="Auto_Consumer" Content="Block Sponsored Apps" IsChecked="True" ToolTip="Prevents 'Candy Crush' style auto-installs."/>
@@ -398,8 +824,7 @@
                                                     <CheckBox x:Name="Auto_Copilot" Content="Disable Copilot AI" IsChecked="True" ToolTip="Removes the AI assistant button."/>
                                                 </StackPanel>
                 
-                                                <Button x:Name="Btn_RunAuto" Grid.Row="2" Grid.ColumnSpan="2" Content="APPLY AUTO PROFILE" Background="#FF2E2E" Foreground="White" FontWeight="Bold" Height="45" Margin="0,15,0,0" FontSize="14" Cursor="Hand" FontFamily="Consolas">
-                                                    <Button.Effect><DropShadowEffect Color="#FF2E2E" BlurRadius="15" Opacity="0.4" ShadowDepth="0"/></Button.Effect>
+                                                <Button x:Name="Btn_RunAuto" Grid.Row="2" Grid.ColumnSpan="2" Content="APPLY AUTO PROFILE" Style="{StaticResource ApplyBtn}" Margin="0,15,0,0">
                                                 </Button>
                                             </Grid>
                                         </Border>
@@ -408,8 +833,6 @@
 
                                 <TabItem x:Name="Tab_System">
                                     <StackPanel>
-                                        <TextBlock Text="SYSTEM_CORE" FontSize="36" FontWeight="Thin" Foreground="White" FontFamily="Consolas"/>
-                                        <TextBlock Text="Fundamental Windows configuration." Foreground="#888" Margin="0,0,0,15"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -419,14 +842,14 @@
                                             
                                             <Border Grid.Column="0" Style="{StaticResource CardBorder}">
                                                 <StackPanel>
-                                                    <TextBlock Text="VISUALS" Style="{StaticResource H1}"/>
-                                                    <CheckBox x:Name="Sys_VisualFX" Content="Apply 'Ronin' Visuals" ToolTip="Set Windows to 'Best Performance' (Text Only)."/>
+                                                    <ContentControl Content="VISUALS" Style="{StaticResource H1}"/>
+                                                    <CheckBox x:Name="Sys_VisualFX" Content="Apply 'Ronin' Visuals" ToolTip="Performance visuals: no animations, shadows, window-drag previews or Aero Peek. Keeps smooth fonts and thumbnails. Full effect after you sign out and back in."/>
                                                     <CheckBox x:Name="Sys_DarkTheme" Content="Force Dark Theme" ToolTip="Forces System and Apps to Dark Mode."/>
                                                     <CheckBox x:Name="Sys_Transparency" Content="Disable Transparency (Mica)" ToolTip="Removes see-through effects to save GPU."/>
                                                     <CheckBox x:Name="Sys_AutoBright" Content="Disable Auto-Brightness" ToolTip="Prevents screen dimming based on content."/>
                                                     <CheckBox x:Name="Sys_SnapFlyout" Content="Disable Snap Flyout" ToolTip="Stops the bar appearing at the top of the screen when dragging windows."/>
                                                   
-                                                    <TextBlock Text="TASKBAR &amp; START" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                    <ContentControl Content="TASKBAR &amp; START" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                     <CheckBox x:Name="Sys_TaskbarAlign" Content="Align Taskbar to Left" ToolTip="Moves Start button to the left corner."/>
                                                     <CheckBox x:Name="Sys_TaskbarCombine" Content="Never Combine Buttons" ToolTip="Shows full labels for taskbar icons (Win 10 Style)."/>
                                                     <CheckBox x:Name="Sys_EndTask" Content="Enable 'End Task'" ToolTip="Adds an End Task option to right-clicking an app on the taskbar."/>
@@ -435,7 +858,7 @@
                                                     <CheckBox x:Name="Sys_Seconds" Content="Show Seconds in Clock" ToolTip="Adds seconds to the taskbar clock."/>
                                                     <CheckBox x:Name="Sys_AeroShake" Content="Disable Aero Shake" ToolTip="Prevents window minimizing when shaking mouse."/>
 
-                                                    <TextBlock Text="SYSTEM UI" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                    <ContentControl Content="SYSTEM UI" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                     <CheckBox x:Name="Sys_UAC" Content="Set UAC to 'Never Notify'" ToolTip="Stops the 'Do you want to allow this app' popup."/>
                                                     <CheckBox x:Name="Sys_LockScreen" Content="Disable Lock Screen" ToolTip="Go straight to login on wake."/>
                                                     <CheckBox x:Name="Sys_DetailedBSOD" Content="Enable Detailed BSOD" ToolTip="Shows QR codes and debug info on crash."/>
@@ -445,7 +868,7 @@
                                             
                                             <Border Grid.Column="1" Style="{StaticResource CardBorder}">
                                                 <StackPanel>
-                                                    <TextBlock Text="FILE EXPLORER" Style="{StaticResource H1}"/>
+                                                    <ContentControl Content="FILE EXPLORER" Style="{StaticResource H1}"/>
                                                     <CheckBox x:Name="Sys_ExplorerOpen" Content="Open Explorer to 'This PC'" ToolTip="Changes default folder from 'Quick Access' to 'This PC'."/>
                                                     <CheckBox x:Name="Sys_CleanThisPC" Content="Clean 'This PC' Folders" ToolTip="Removes 3D Objects, Music, Pictures etc from This PC view."/>
                                                     <CheckBox x:Name="Sys_DupliDrive" Content="Fix Duplicate USB Drives" ToolTip="Prevents USB drives from appearing twice in Explorer."/>
@@ -453,12 +876,12 @@
                                                     <CheckBox x:Name="Sys_ShowHidden" Content="Show Hidden Files" ToolTip="Reveals hidden system files."/>
                                                     <CheckBox x:Name="Sys_SearchIndex" Content="Disable Search Indexer" ToolTip="EXPERT: Stops file indexing.&#x0a;Search will be slow."/>
 
-                                                    <TextBlock Text="NAVIGATION PANE" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                    <ContentControl Content="NAVIGATION PANE" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                     <CheckBox x:Name="Sys_NoGallery" Content="Remove 'Gallery'" ToolTip="Removes the Gallery icon from Explorer."/>
                                                     <CheckBox x:Name="Sys_NoHome" Content="Remove 'Home' Section" ToolTip="Cleans up the Explorer sidebar."/>
                                                     <CheckBox x:Name="Sys_Shortcuts" Content="Remove '- Shortcut' Text" ToolTip="New shortcuts won't have text appended."/>
                                                     
-                                                    <TextBlock Text="CONTEXT MENU" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                    <ContentControl Content="CONTEXT MENU" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                     <CheckBox x:Name="Sys_ContextMenu" Content="Restore Classic Menu" ToolTip="Brings back the Windows 10 style Right-Click menu."/>
                                                     <CheckBox x:Name="Sys_ContextMenuClean" Content="Clean Right-Click Menu" ToolTip="Removes 'Share' and 'Give Access To' from Right-Click."/>
                                                     <CheckBox x:Name="Sys_MenuDelay" Content="Instant Menu Delay (0ms)" ToolTip="Removes the 400ms delay when hovering menus."/>
@@ -467,14 +890,14 @@
 
                                             <Border Grid.Column="2" Style="{StaticResource CardBorder}">
                                                 <StackPanel>
-                                                    <TextBlock Text="POLICIES &amp; UPDATE" Style="{StaticResource H1}"/>
+                                                    <ContentControl Content="POLICIES &amp; UPDATE" Style="{StaticResource H1}"/>
                                                     <CheckBox x:Name="Sys_StartAds" Content="Disable System-Wide Ads" ToolTip="Blocks ads in Start, Lock Screen, Settings, and Explorer."/>
                                                     <CheckBox x:Name="Sys_SettingsClean" Content="Disable 'Settings Home' Ad" ToolTip="Removes the ad-filled Home page from Windows Settings."/>
                                                     <CheckBox x:Name="Sys_FinishSetup" Content="Disable 'Finish Setup' Nag" ToolTip="Stops the 'Let's finish setting up your device' screen."/>
                                                     <CheckBox x:Name="Sys_DeviceInstall" Content="Disable Driver Downloads" Foreground="#FFAA00" ToolTip="WARNING: Prevents Windows Update from installing drivers."/>
                                                     <CheckBox x:Name="Sys_Recall" Content="Disable Windows Recall" ToolTip="Blocks the AI screenshot history feature."/>
 
-                                                    <TextBlock Text="POWER &amp; PERF" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                    <ContentControl Content="POWER &amp; PERF" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                     <StackPanel Orientation="Horizontal">
                                                         <CheckBox x:Name="Sys_Hibernation" Content="Disable Hibernation" ToolTip="Frees up storage space equal to RAM size."/>
                                                         <TextBlock x:Name="Txt_RamRec_System" Text="" FontSize="11" Foreground="#555" VerticalAlignment="Center" Margin="10,0,0,0"/>
@@ -490,25 +913,27 @@
                                                         <ComboBoxItem Content="Force Disable Background Apps"/>
                                                     </ComboBox>
                                                     
-                                                    <Border Background="#251E1E" Padding="10" BorderBrush="#333" BorderThickness="1" CornerRadius="4" Margin="0,15,0,0">
-                                                        <CheckBox x:Name="Sys_Bloatware" Content="REMOVE ALL BLOATWARE" ToolTip="DANGEROUS: Removes Mail, Calc, Weather, Xbox, etc." Foreground="#FF5555" FontSize="11" FontWeight="Bold"/>
+                                                    <Border Background="#251E1E" Padding="10" BorderBrush="#660000" BorderThickness="1" CornerRadius="4" Margin="0,15,0,0">
+                                                        <StackPanel>
+                                                            <TextBlock Text="BLOATWARE" Foreground="#FF5555" FontSize="11" FontWeight="Bold" FontFamily="Consolas" Margin="0,0,0,6"/>
+                                                            <Button x:Name="Btn_Debloat" Content="OPEN DEBLOAT CENTER" Background="#2A1414" Foreground="White" FontWeight="Bold" Height="38" FontFamily="Consolas" ToolTip="Scans the apps actually installed on THIS machine and opens a selectable removal menu. Junk apps come pre-selected; nothing is removed until you confirm. Removed apps can be reinstalled from the Microsoft Store."/>
+                                                        </StackPanel>
                                                     </Border>
                                                 </StackPanel>
                                             </Border>
                                         </Grid>
-                                        <Button x:Name="Btn_RunSystem" Content="APPLY / REVERT SYSTEM TWEAKS" Background="#FF2E2E" Foreground="White" FontWeight="Bold" Height="45" Margin="0,15,0,0" FontFamily="Consolas"/>
+                                        <Button x:Name="Btn_RunSystem" Content="APPLY / REVERT SYSTEM TWEAKS" Style="{StaticResource ApplyBtn}" Margin="0,15,0,0"/>
                                     </StackPanel>
                                 </TabItem>
 
                                 <TabItem x:Name="Tab_Gaming">
                                     <StackPanel>
-                                        <TextBlock Text="GAMING_OPTIMIZE" FontSize="36" FontWeight="Thin" Foreground="White" FontFamily="Consolas"/>
                                         <Grid Margin="0,10,0,10">
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="GENERAL" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="GENERAL" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Game_HAGS" Content="Enable HAGS (GPU Scheduling)" ToolTip="Allows GPU to manage its own VRAM.&#x0a;Essential for DLSS 3."/>
                                                         <CheckBox x:Name="Game_VRR" Content="Force Variable Refresh Rate (VRR)" ToolTip="Forces G-Sync/FreeSync support for older DX11 games."/>
                                                         <CheckBox x:Name="Game_GpuPriority" Content="Set GPU Priority to 'High'" ToolTip="Forces Windows to prioritize GPU tasks over background processes."/>
@@ -523,9 +948,9 @@
                                                     </StackPanel>
                                                 </Border>
                                              
-                                                <TextBlock Text="HARDWARE SPECIFIC" Style="{StaticResource H1}"/>
+                                                <ContentControl Content="HARDWARE SPECIFIC" Style="{StaticResource H1}"/>
                                              
-                                                <Border x:Name="Section_AMD" Background="#161616" Padding="15" BorderBrush="#222" BorderThickness="1" Margin="0,0,0,10" CornerRadius="4">
+                                                <Border x:Name="Section_AMD" Style="{StaticResource CardBorder}" Margin="0,0,0,10">
                                                     <StackPanel>
                                                         <TextBlock Text="AMD RADEON" FontSize="11" FontWeight="Bold" Foreground="#FF5555" Margin="0,0,0,5"/>
                                                         <CheckBox x:Name="Game_TdrDelay" Content="Fix GPU Driver Timeouts" ToolTip="Increases timeout before Windows resets a lagging GPU driver."/>
@@ -533,7 +958,7 @@
                                                     </StackPanel>
                                                 </Border>
 
-                                                <Border x:Name="Section_Intel" Background="#001828" Padding="15" BorderBrush="#0055AA" BorderThickness="1" CornerRadius="4">
+                                                <Border x:Name="Section_Intel" Style="{StaticResource CardBorder}" Margin="0,0,0,0">
                                                     <StackPanel>
                                                         <TextBlock Text="INTEL ARC / UHD" FontSize="11" FontWeight="Bold" Foreground="#00AAFF" Margin="0,0,0,5"/>
                                                         <CheckBox x:Name="Game_DPST" Content="Disable Intel DPST (Power Saving)" ToolTip="Fixes annoying brightness/contrast shifting on battery (Display Power Saving Technology)."/>
@@ -545,42 +970,42 @@
                                             <StackPanel Grid.Column="1" Margin="10,0,0,0">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="INPUT &amp; NETWORK" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="INPUT &amp; NETWORK" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Game_MouseAccel" Content="Disable Mouse Acceleration" ToolTip="Ensures 1:1 mouse movement (EPP Off)."/>
                                                         <CheckBox x:Name="Game_Sticky" Content="Disable Sticky Keys / Filter Keys" ToolTip="Prevents popups when mashing Shift/Ctrl."/>
                                                         <CheckBox x:Name="Game_NetThrot" Content="Disable Network Throttling" ToolTip="Removes the 10 packets/ms limit for non-multimedia traffic."/>
                                                         <CheckBox x:Name="Game_Nagle" Content="Disable Nagle's Algorithm" ToolTip="Disables TCP packet bundling for lower ping."/>
                                                         <CheckBox x:Name="Game_Latency" Content="Enable Latency Slicer" ToolTip="Optimizes TCP Ack Frequency for real-time data."/>
                                                         <CheckBox x:Name="Game_InterruptModeration" Content="Disable Interrupt Moderation" ToolTip="Forces CPU to process network/GPU packets immediately.&#x0a;Lowers latency."/>
-                                                        <CheckBox x:Name="Game_NetTuning" Content="Enable Network Buffer Tuning" ToolTip="Optimizes Receive Side Scaling (RSS) and DCA for modern network adapters."/>
 
-                                                        <TextBlock Text="STORAGE &amp; I/O" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                        <ContentControl Content="STORAGE &amp; I/O" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                         <CheckBox x:Name="Game_DirectStorage" Content="Enable NTFS DirectStorage Mode" ToolTip="Enforces NTFS compression for GPU-accelerated decompression via DirectStorage 1.2+."/>
                                                         <CheckBox x:Name="Game_NtfsMemory" Content="Increase NTFS Cache Pool" ToolTip="Expands the NTFS driver memory pool for file caching. Reduces I/O stalls in large open-world games."/>
                                                         <CheckBox x:Name="Game_ScatterGather" Content="Fix NVMe Sector Alignment (4K)" ToolTip="Forces correct 4096-byte physical sector reporting for NVMe drives. Fixes misaligned I/O on some controllers."/>
                                                         <CheckBox x:Name="Game_IoPriority" Content="Reset I/O Priority to Kernel Default" ToolTip="Removes any manual I/O priority override and lets Windows kernel manage scheduling dynamically."/>
+
+                                                        <ContentControl Content="CONSOLE MODE" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                        <CheckBox x:Name="Game_ConsoleMode" Content="Boot to Steam Big Picture (Console UI)" ToolTip="Living-room console mode on ANY hardware: boots this PC straight into Steam Big Picture's controller UI at startup. Fully reversible. Requires Steam installed."/>
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
                                         </Grid>
 
                                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                            <Button x:Name="Btn_RunGaming" Content="APPLY / REVERT GAMING" Background="#FF2E2E" Foreground="White" FontWeight="Bold" Height="45" Width="250" Margin="0,0,20,0" FontFamily="Consolas"/>
-                                            <Button x:Name="Btn_CheckDrivers" Content="CHECK GPU DRIVERS" Background="#222" Foreground="White" FontWeight="Bold" Height="45" Width="250" FontFamily="Consolas"/>
+                                            <Button x:Name="Btn_RunGaming" Content="APPLY / REVERT GAMING" Style="{StaticResource ApplyBtn}" Width="250" Margin="0,0,20,0"/>
+                                            <Button x:Name="Btn_CheckDrivers" Content="CHECK GPU DRIVERS" Style="{StaticResource GhostBtn}" Height="44" Width="250"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </TabItem>
 
                                <TabItem x:Name="Tab_Handheld">
                                     <StackPanel>
-                                        <TextBlock Text="HANDHELD_MODE" FontSize="36" FontWeight="Thin" Foreground="White" FontFamily="Consolas"/>
-                                        <TextBlock Text="Optimizations for ROG Ally, Legion Go, MSI Claw &amp; Steam Deck." Foreground="#888" Margin="0,0,0,15"/>
                                         
-                                        <Border Background="#990A0A0A" Padding="25" BorderBrush="#333" BorderThickness="1" CornerRadius="6">
+                                        <Border Background="#990A0A0A" Padding="16" BorderBrush="#333" BorderThickness="1" CornerRadius="6">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="Auto"/>
-                                                    <RowDefinition Height="20"/>
+                                                    <RowDefinition Height="12"/>
                                                     <RowDefinition Height="Auto"/>
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
@@ -592,15 +1017,15 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     
-                                                    <Border Grid.Column="0" Background="#1a253a" Padding="15" BorderBrush="#0055AA" BorderThickness="1" CornerRadius="4">
+                                                    <Border Grid.Column="0" Background="#1a253a" Padding="12" BorderBrush="#0055AA" BorderThickness="1" CornerRadius="4">
                                                         <StackPanel>
-                                                            <TextBlock Text="CPU TURBO BOOST" Style="{StaticResource H1}" Foreground="#00AAFF" Margin="0,0,0,6"/>
-                                                            <TextBlock Text="Controls if CPU boosts past base clock. Disabling saves massive battery." FontSize="13" Foreground="#999" Margin="0,0,0,15" TextWrapping="Wrap"/>
+                                                            <ContentControl Content="CPU TURBO BOOST" Style="{StaticResource H1}" Foreground="#00AAFF" Margin="0,0,0,6"/>
+                                                            <TextBlock Text="Controls if CPU boosts past base clock. Disabling saves massive battery." FontSize="13" Foreground="#999" Margin="0,0,0,8" TextWrapping="Wrap"/>
                                                             <Grid>
                                                                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
                                                                 <StackPanel Grid.Column="0">
                                                                     <TextBlock Text="AC (PLUGGED)" FontSize="11" Foreground="#CCC" Margin="0,0,0,4" FontWeight="Bold"/>
-                                                                    <ComboBox x:Name="HH_BoostMode_AC" Height="36" Style="{StaticResource DarkComboStyle}" FontSize="13">
+                                                                    <ComboBox x:Name="HH_BoostMode_AC" Height="32" Style="{StaticResource DarkComboStyle}" FontSize="13">
                                                                         <ComboBoxItem Content="Disabled"/>
                                                                         <ComboBoxItem Content="Enabled"/>
                                                                         <ComboBoxItem Content="Aggressive"/>
@@ -609,7 +1034,7 @@
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="2">
                                                                     <TextBlock Text="DC (BATTERY)" FontSize="11" Foreground="#CCC" Margin="0,0,0,4" FontWeight="Bold"/>
-                                                                    <ComboBox x:Name="HH_BoostMode_DC" Height="36" Style="{StaticResource DarkComboStyle}" FontSize="13">
+                                                                    <ComboBox x:Name="HH_BoostMode_DC" Height="32" Style="{StaticResource DarkComboStyle}" FontSize="13">
                                                                         <ComboBoxItem Content="Disabled"/>
                                                                         <ComboBoxItem Content="Enabled"/>
                                                                         <ComboBoxItem Content="Aggressive"/>
@@ -620,15 +1045,15 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <Border Grid.Column="2" Background="#251E1E" Padding="15" BorderBrush="#660000" BorderThickness="1" CornerRadius="4">
+                                                    <Border Grid.Column="2" Background="#251E1E" Padding="12" BorderBrush="#660000" BorderThickness="1" CornerRadius="4">
                                                         <StackPanel>
-                                                            <TextBlock Text="ENERGY PERFORMANCE (EPP)" Style="{StaticResource H1}" Foreground="#FF5555" Margin="0,0,0,6"/>
-                                                            <TextBlock Text="EPP acts as a power balancer. CPU Priority (0) holds high clocks. GPU Bias (85+) releases wattage to the iGPU for much better gaming FPS." FontSize="13" Foreground="#999" Margin="0,0,0,15" TextWrapping="Wrap"/>
+                                                            <ContentControl Content="ENERGY PERFORMANCE (EPP)" Style="{StaticResource H1}" Foreground="#FF5555" Margin="0,0,0,6"/>
+                                                            <TextBlock Text="EPP acts as a power balancer. CPU Priority (0) holds high clocks. GPU Bias (85+) releases wattage to the iGPU for much better gaming FPS." FontSize="13" Foreground="#999" Margin="0,0,0,8" TextWrapping="Wrap"/>
                                                             <Grid>
                                                                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="10"/><ColumnDefinition/></Grid.ColumnDefinitions>
                                                                 <StackPanel Grid.Column="0">
                                                                     <TextBlock Text="AC (PLUGGED)" FontSize="11" Foreground="#CCC" Margin="0,0,0,4" FontWeight="Bold"/>
-                                                                    <ComboBox x:Name="HH_EPP_AC" Height="36" Style="{StaticResource DarkComboStyle}" FontSize="13">
+                                                                    <ComboBox x:Name="HH_EPP_AC" Height="32" Style="{StaticResource DarkComboStyle}" FontSize="13">
                                                                         <ComboBoxItem Content="CPU Priority (0)"/>
                                                                         <ComboBoxItem Content="Performance Bias (33)"/>
                                                                         <ComboBoxItem Content="Balanced (50)"/>
@@ -638,7 +1063,7 @@
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="2">
                                                                     <TextBlock Text="DC (BATTERY)" FontSize="11" Foreground="#CCC" Margin="0,0,0,4" FontWeight="Bold"/>
-                                                                    <ComboBox x:Name="HH_EPP_DC" Height="36" Style="{StaticResource DarkComboStyle}" FontSize="13">
+                                                                    <ComboBox x:Name="HH_EPP_DC" Height="32" Style="{StaticResource DarkComboStyle}" FontSize="13">
                                                                         <ComboBoxItem Content="CPU Priority (0)"/>
                                                                         <ComboBoxItem Content="Performance Bias (33)"/>
                                                                         <ComboBoxItem Content="Balanced (50)"/>
@@ -659,7 +1084,7 @@
                                                     </Grid.ColumnDefinitions>
 
                                                     <StackPanel Grid.Column="0">
-                                                        <TextBlock Text="POWER &amp; CONNECTIVITY" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="POWER &amp; CONNECTIVITY" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="HH_UsbSuspend" Content="Disable USB Selective Suspend" ToolTip="Fixes disconnect issues with docks."/>
                                                         <CheckBox x:Name="HH_HibernateBtn" Content="Hot-Bag Fix (Power = Hibernate)" ToolTip="Prevents waking in bag."/>
                                                         <CheckBox x:Name="HH_WakeTimers" Content="Disable System Wake Timers"/>
@@ -670,7 +1095,7 @@
                                                         <CheckBox x:Name="HH_DeviceGuard" Content="Disable Device Guard (Deep VBS)"/>
                                                         <CheckBox x:Name="HH_VMP" Content="Disable Virtual Machine Platform"/>
                                                         
-                                                        <TextBlock Text="DIAGNOSTICS" Style="{StaticResource H1}" Margin="0,15,0,8" Foreground="#888"/>
+                                                        <ContentControl Content="DIAGNOSTICS" Style="{StaticResource H1}" Margin="0,15,0,8" Foreground="#888"/>
                                                         <Grid>
                                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                                             <Button x:Name="Btn_Battery" Grid.Column="0" Content="BATTERY REPORT" Background="#222" Foreground="White" Height="32" FontSize="12" FontFamily="Consolas"/>
@@ -679,18 +1104,17 @@
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Column="2">
-                                                        <TextBlock Text="LAUNCHER MANAGEMENT" Style="{StaticResource H1}" Foreground="#66c0f4"/>
-                                                        <CheckBox x:Name="HH_Asus_AC" Content="Optimize Armoury Crate (ASUS)"/>
-                                                        <CheckBox x:Name="HH_Legion_Space" Content="Optimize Legion Space (Lenovo)"/>
-                                                        <CheckBox x:Name="HH_Msi_Center" Content="Optimize MSI Center M (MSI)"/>
-                                                        <CheckBox x:Name="HH_SteamDeck" Content="Steam Deck UI (Big Picture)"/>
+                                                        <ContentControl Content="LAUNCHER MANAGEMENT" Style="{StaticResource H1}" Foreground="#66c0f4"/>
+                                                        <CheckBox x:Name="HH_Asus_AC" Content="Stop Armoury Crate Auto-Start (ASUS)"/>
+                                                        <CheckBox x:Name="HH_Legion_Space" Content="Stop Legion Space Auto-Start (Lenovo)"/>
+                                                        <CheckBox x:Name="HH_Msi_Center" Content="Stop MSI Center M Auto-Start (MSI)"/>
 
-                                                        <TextBlock Text="STORAGE &amp; ENCRYPTION" Style="{StaticResource H1}" Margin="0,15,0,8"/>
+                                                        <ContentControl Content="STORAGE &amp; ENCRYPTION" Style="{StaticResource H1}" Margin="0,15,0,8"/>
                                                         <CheckBox x:Name="HH_CompactOS" Content="Enable CompactOS (Save Space)"/>
                                                         <CheckBox x:Name="HH_HiberReduced" Content="Use Reduced Hibernation File" ToolTip="Sets hiberfil.sys to ~50% of RAM instead of full size. Recovers 4-8GB on small SSDs."/>
                                                         <CheckBox x:Name="HH_Encryption" Content="Disable Device Encryption"/>
 
-                                                        <TextBlock Text="INPUT &amp; UX" Style="{StaticResource H1}" Margin="0,15,0,8"/>
+                                                        <ContentControl Content="INPUT &amp; UX" Style="{StaticResource H1}" Margin="0,15,0,8"/>
                                                         <CheckBox x:Name="HH_EdgeSwipe" Content="Disable Touchscreen Edge Swipes"/>
                                                         <CheckBox x:Name="HH_TouchResponse" Content="Boost Touchscreen Response"/>
                                                         <CheckBox x:Name="HH_TouchKeyboard" Content="Optimize Touch Keyboard"/>
@@ -698,8 +1122,7 @@
                                                     </StackPanel>
                                                 </Grid>
 
-                                                <Button x:Name="Btn_RunHandheld" Grid.Row="3" Content="APPLY / REVERT HANDHELD TWEAKS" Background="#FF2E2E" Foreground="White" FontWeight="Bold" Height="45" Margin="0,20,0,0" FontSize="14" Cursor="Hand" FontFamily="Consolas">
-                                                    <Button.Effect><DropShadowEffect Color="#FF2E2E" BlurRadius="15" Opacity="0.4" ShadowDepth="0"/></Button.Effect>
+                                                <Button x:Name="Btn_RunHandheld" Grid.Row="3" Content="APPLY / REVERT HANDHELD TWEAKS" Style="{StaticResource ApplyBtn}" Margin="0,20,0,0">
                                                 </Button>
                                             </Grid>
                                         </Border>
@@ -708,15 +1131,13 @@
 
                                 <TabItem x:Name="Tab_Privacy">
                                     <StackPanel>
-                                        <TextBlock Text="PRIVACY_SHIELD" FontSize="36" FontWeight="Thin" Foreground="White" FontFamily="Consolas"/>
-                                        <TextBlock Text="Advanced telemetry blocking &amp; data protection." Foreground="#888" Margin="0,0,0,15"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                             
                                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="BASIC TELEMETRY" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="BASIC TELEMETRY" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Priv_Tele" Content="Disable Telemetry &amp; Data Collection" ToolTip="Sets Data Collection to 'Security Only'."/>
                                                         <CheckBox x:Name="Priv_WUDO" Content="Disable Delivery Optimization (WUDO)" ToolTip="Stops Windows from using your bandwidth to upload updates to others (P2P)."/>
                                                         <CheckBox x:Name="Priv_AdID" Content="Disable Advertising ID" ToolTip="Prevents apps from tracking ad preferences."/>
@@ -724,13 +1145,15 @@
                                                         <CheckBox x:Name="Priv_Wifi" Content="Disable Wi-Fi Sense" ToolTip="Stops sharing wifi networks with contacts."/>
                                                         <CheckBox x:Name="Priv_SharedExp" Content="Disable Shared Experiences" ToolTip="Stops cross-device continuity features."/>
                                                         
-                                                        <TextBlock Text="DEEP TELEMETRY" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                        <ContentControl Content="DEEP TELEMETRY" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                         <CheckBox x:Name="Priv_ActivityFeed" Content="Disable Activity Feed" ToolTip="Removes history from Task View."/>
                                                         <CheckBox x:Name="Priv_TypingInsights" Content="Disable Typing Insights" ToolTip="Stops Windows from learning your typing habits."/>
+                                                        <CheckBox x:Name="Priv_InkTyping" Content="Disable Inking &amp; Typing Personalization"/>
                                                         <CheckBox x:Name="Priv_WER" Content="Disable Windows Error Reporting" ToolTip="Prevents sending crash dumps to Microsoft."/>
                                                         <CheckBox x:Name="Priv_TeleTasks" Content="Kill Telemetry Agents (Tasks)" ToolTip="Disables scheduled tasks that upload data."/>
                                                         <CheckBox x:Name="Priv_AI_Telemetry" Content="Purge 24H2 AI Telemetry Tasks" ToolTip="Disables the new hidden data collection tasks in Windows 11 24H2."/>
                                                         <CheckBox x:Name="Priv_24H2_AI" Content="Disable 'Click To Do' &amp; Generative AI" ToolTip="Blocks the new context-aware AI in 24H2 and Paint/Notepad."/>
+                                                        <CheckBox x:Name="Priv_AIExtras" Content="Disable Paint/Office AI &amp; Hide AI Settings" ToolTip="Policy-level kill for Paint Image Creator/Cocreator/Generative Fill, Notepad's AI features, Office AI training, and the 'AI Components' Settings page."/>
                                                         <CheckBox x:Name="Priv_Feedback" Content="Remove Feedback Hub" ToolTip="Uninstalls the Feedback Hub app."/>
                                                         <CheckBox x:Name="Priv_Inventory" Content="Disable Inventory Service" ToolTip="Stops Windows from cataloging installed apps."/>
                                                     </StackPanel>
@@ -740,16 +1163,17 @@
                                             <StackPanel Grid.Column="1" Margin="10,0,0,0">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="UI BLOAT" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="UI BLOAT" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Priv_Bing" Content="Disable Bing Search in Start Menu" ToolTip="Local search results only."/>
                                                         <CheckBox x:Name="Priv_Widgets" Content="Remove Widgets from Taskbar" ToolTip="Hides the News/Weather icon."/>
                                                         <CheckBox x:Name="Priv_Copilot" Content="Disable Windows Copilot AI" ToolTip="Removes the Copilot button."/>
                                                         <CheckBox x:Name="Priv_OneDrive" Content="Disable OneDrive Integration" ToolTip="Stops OneDrive syncing and startup via Group Policy (Safe Mode)."/>
                                                         <CheckBox x:Name="Priv_EdgeHardening" Content="Disable Edge Shopping &amp; Sidebar" ToolTip="Hardens Edge policies to block shopping popups and sidebar bloat."/>
+                                                        <CheckBox x:Name="Priv_EdgeCopilot" Content="Block Copilot in Edge" ToolTip="Stops Edge Copilot from reading page content and hides the chat icon."/>
                                                         <CheckBox x:Name="Priv_TailoredExp" Content="Disable Tailored Experiences" ToolTip="Stops 'Tips' and 'Suggestions'."/>
                                                         <CheckBox x:Name="Priv_ConsumerFeatures" Content="Block Sponsored Apps" ToolTip="Prevents unwanted app installs."/>
                                                     
-                                                        <TextBlock Text="ACTIVITY &amp; SENSORS" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                        <ContentControl Content="ACTIVITY &amp; SENSORS" Style="{StaticResource H1}" Margin="0,10,0,8"/>
                                                         <CheckBox x:Name="Priv_ActivityUpload" Content="Disable User Activity Upload" ToolTip="Stops syncing timeline to the cloud."/>
                                                         <CheckBox x:Name="Priv_CloudClipboard" Content="Disable Cloud Clipboard" ToolTip="Keeps clipboard local only."/>
                                                         <CheckBox x:Name="Priv_Maps" Content="Disable Map Auto-Updates" ToolTip="Saves bandwidth."/>
@@ -759,21 +1183,19 @@
                                                 </Border>
                                             </StackPanel>
                                         </Grid>
-                                        <Button x:Name="Btn_RunPrivacy" Content="APPLY / REVERT PRIVACY SHIELD" Background="#FF2E2E" Foreground="White" FontWeight="Bold" Height="45" Margin="0,15,0,0" FontFamily="Consolas"/>
+                                        <Button x:Name="Btn_RunPrivacy" Content="APPLY / REVERT PRIVACY SHIELD" Style="{StaticResource ApplyBtn}" Margin="0,15,0,0"/>
                                     </StackPanel>
                                 </TabItem>
 
                                 <TabItem x:Name="Tab_Advanced">
                                     <StackPanel>
-                                        <TextBlock Text="ADVANCED_ARSENAL" FontSize="36" FontWeight="Thin" Foreground="White" FontFamily="Consolas"/>
-                                        <TextBlock Text="Expert tweaks for low latency &amp; deep optimization." Foreground="#888" Margin="0,0,0,15"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                              
                                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="INPUT &amp; LATENCY" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="INPUT &amp; LATENCY" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Adv_TimerOpt" Content="Timer Optimization (TSC Mode)" ToolTip="Resets system timer to Windows Defaults (TSC).&#x0a;Resolves stutters in modern games."/>
                                                         <CheckBox x:Name="Adv_InputLatency" Content="Reduce Mouse &amp; Keyboard Buffer" ToolTip="Lowers input buffer size for lower latency."/>
                                                         <CheckBox x:Name="Adv_Priority" Content="Set Win32 Priority to Foreground" ToolTip="Gives 'Win32PrioritySeparation' favor to foreground window."/>
@@ -783,7 +1205,7 @@
                                                 
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="STORAGE &amp; POWER" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="STORAGE &amp; POWER" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Adv_Storage" Content="Optimize File System" ToolTip="Disables 8.3 naming and last access updates."/>
                                                         <CheckBox x:Name="Adv_ReservedStorage" Content="Disable Reserved Storage (7GB+)" ToolTip="Reclaims ~7GB of disk space reserved for updates."/>
                                                         <CheckBox x:Name="Adv_MemComp" Content="Enable Memory Compression" ToolTip="Compresses RAM to prevent paging."/>
@@ -791,12 +1213,24 @@
                                                         <CheckBox x:Name="Adv_UltPower" Content="Enable 'Ultimate Performance' Plan" ToolTip="Unlocks the hidden workstation power plan."/>
                                                     </StackPanel>
                                                 </Border>
+
+                                                <Border Style="{StaticResource CardBorder}">
+                                                    <StackPanel>
+                                                        <ContentControl Content="DNS COMMAND CENTER" Style="{StaticResource H1}"/>
+                                                        <UniformGrid Columns="2">
+                                                        <Button x:Name="Btn_DNS_Cloud" Content="CLOUDFLARE (1.1.1.1)" Background="#222" Foreground="White" Height="38" Margin="0,0,6,6" ToolTip="Fast and private DNS."/>
+                                                        <Button x:Name="Btn_DNS_Google" Content="GOOGLE (8.8.8.8)" Background="#222" Foreground="White" Height="38" Margin="0,0,0,6" ToolTip="Reliable global DNS."/>
+                                                        <Button x:Name="Btn_DNS_Quad9" Content="QUAD9 (9.9.9.9)" Background="#222" Foreground="White" Height="38" Margin="0,0,6,0" ToolTip="Security-focused DNS that blocks known malware domains at the resolver level."/>
+                                                        <Button x:Name="Btn_DNS_Auto" Content="UNDO / AUTO" Background="#222" Foreground="White" Height="38" ToolTip="Puts back the DNS each network adapter had before Ronin changed it - servers you typed in yourself, or automatic DNS from your router. (If Ronin has no record, every adapter goes back to automatic.)"/>
+                                                        </UniformGrid>
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
                                             
                                             <StackPanel Grid.Column="1" Margin="10,0,0,0">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="UTILITIES" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="UTILITIES" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Adv_PhotoViewer" Content="Restore Windows 7 Photo Viewer" ToolTip="Faster than the modern Photos app."/>
                                                         <CheckBox x:Name="Adv_UTC" Content="Set Time to UTC (Dual Boot)" ToolTip="Fixes time sync issues when dual-booting Linux/Bazzite."/>
                                                         <CheckBox x:Name="Adv_Printing" Content="Disable Printing (Spooler)" ToolTip="Disables the print spooler service."/>
@@ -805,149 +1239,426 @@
 
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="WINDOWS FEATURES" Style="{StaticResource H1}"/>
+                                                        <ContentControl Content="WINDOWS FEATURES" Style="{StaticResource H1}"/>
                                                         <CheckBox x:Name="Adv_WSL" Content="Enable Windows Subsystem for Linux (WSL)" ToolTip="Allows Linux terminal and environments to run natively in Windows. Requires a reboot."/>
                                                         <CheckBox x:Name="Adv_HyperV" Content="Enable Hyper-V Virtualization" ToolTip="Enables the Microsoft Hyper-V platform for creating and running virtual machines. Requires a reboot."/>
+                                                        <CheckBox x:Name="Adv_NetFx3" Content="Add .NET Framework 3.5 (Older Games)"/>
+                                                        <CheckBox x:Name="Adv_DirectPlay" Content="Add DirectPlay (Older Games)"/>
                                                         <CheckBox x:Name="Adv_RecallRemove" Content="Fully Remove Recall (Expert)" ToolTip="EXPERT: fully removes the Recall feature, not just policy-disabled. The Privacy tab's Disable Recall is enough for most users. Requires a reboot."/>
                                                         <CheckBox x:Name="Adv_WPBT" Content="Block Vendor Software Injection (WPBT)" ToolTip="Stops motherboard/laptop firmware from auto-installing vendor software (e.g. Armoury Crate) into Windows at every boot - even on clean installs. You bought the hardware; you decide what runs. Reversible. Takes effect after reboot."/>
                                                     </StackPanel>
                                                 </Border>
                                                 
-                                                <Border Style="{StaticResource CardBorder}">
-                                                    <StackPanel>
-                                                        <TextBlock Text="DNS COMMAND CENTER" Style="{StaticResource H1}"/>
-                                                        <Button x:Name="Btn_DNS_Cloud" Content="SET CLOUDFLARE (1.1.1.1)" Background="#222" Foreground="White" Height="45" Margin="0,0,0,8" ToolTip="Fast and private DNS."/>
-                                                        <Button x:Name="Btn_DNS_Google" Content="SET GOOGLE (8.8.8.8)" Background="#222" Foreground="White" Height="45" Margin="0,0,0,8" ToolTip="Reliable global DNS."/>
-                                                        <Button x:Name="Btn_DNS_Quad9" Content="SET QUAD9 (9.9.9.9)" Background="#222" Foreground="White" Height="45" Margin="0,0,0,8" ToolTip="Security-focused DNS that blocks known malware domains at the resolver level."/>
-                                                        <Button x:Name="Btn_DNS_Auto" Content="RESET TO AUTO (DHCP)" Background="#222" Foreground="White" Height="45" ToolTip="Default ISP DNS settings."/>
-                                                    </StackPanel>
-                                                </Border>
+
                                             </StackPanel>
                                         </Grid>
-                                        <Button x:Name="Btn_RunAdvanced" Content="APPLY / REVERT ADVANCED" Background="#FF2E2E" Foreground="White" FontWeight="Bold" Height="45" Margin="0,15,0,0" FontFamily="Consolas"/>
+                                        <Button x:Name="Btn_RunAdvanced" Content="APPLY / REVERT ADVANCED" Style="{StaticResource ApplyBtn}" Margin="0,15,0,0"/>
                                     </StackPanel>
                                 </TabItem>
 
 <TabItem x:Name="Tab_Maint">
-                                    <StackPanel Margin="0,0,0,50">
-                                        <TextBlock Text="SYSTEM_MAINTENANCE" FontSize="36" FontWeight="Thin" Foreground="White" FontFamily="Consolas"/>
-                                        <Grid Margin="0,10,0,0">
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                                <Border Style="{StaticResource CardBorder}">
-                                                    <StackPanel>
-                                                        <TextBlock Text="ONE-CLICK REPAIR" Style="{StaticResource H1}"/>
-                                                        <Button x:Name="Btn_FullRepair" Content="FULL SYSTEM REPAIR (AUTO)" Background="#FF2E2E" Foreground="White" FontWeight="Bold" Height="45" Margin="0,0,0,5" FontFamily="Consolas" ToolTip="Auto-runs SFC, DISM, and CHKDSK in sequence."/>
-                                                        <TextBlock Text="Runs: SFC Scannow, DISM RestoreHealth, and CHKDSK Scan." Foreground="#777" FontSize="11" Margin="0,0,0,15"/>
-                                                        <Button x:Name="Btn_VisualCpp" Content="INSTALL VISUAL C++ AIO (FIX DLL ERRORS)" Background="#252526" Foreground="White" Height="40" Margin="0,0,0,10" ToolTip="Installs all VC++ Runtimes (2005-2022)."/>
-                                                        <Button x:Name="Btn_GpuReset" Content="RESET GPU DRIVER STACK (FIX CRASHES)" Background="#252526" Foreground="White" Height="40" Margin="0,0,0,10" ToolTip="Deep Clean: Purges OpenCL/Vulkan/DX Caches and restarts driver instance."/>
-                                                    </StackPanel>
-                                                </Border>
+                                    <!-- 8.0: three columns with compact buttons, like System Core. The old two-column layout
+                                         was 851 px tall in a 640 px space, so the Viewbox drew the whole tab ~25% smaller (and
+                                         smaller still as the changes list grew). Every element name and tooltip is unchanged. -->
+                                    <TabItem.Resources>
+                                        <Style TargetType="Button" x:Key="MBtn" BasedOn="{StaticResource {x:Type Button}}">
+                                            <Setter Property="Background" Value="#252526"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="Height" Value="32"/>
+                                            <Setter Property="Margin" Value="0,0,0,6"/>
+                                            <Setter Property="FontSize" Value="11"/>
+                                        </Style>
+                                    </TabItem.Resources>
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
 
+                                            <StackPanel Grid.Column="0">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="DIAGNOSTICS &amp; RECOVERY" Style="{StaticResource H1}"/>
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                                            <Button x:Name="Btn_RestorePoint" Grid.Column="0" Content="NEW RESTORE POINT" Background="#333" Foreground="White" Height="40" Margin="0,5,5,5" ToolTip="Create a manual system restore checkpoint."/>
-                                                            <Button x:Name="Btn_OpenBackups" Grid.Column="1" Content="OPEN LOGS &amp; BACKUPS" Background="#333" Foreground="White" Height="40" Margin="5,5,0,5" ToolTip="Open C:\ProgramData\Ronin (logs, state report, and config snapshots)."/>
-                                                        </Grid>
-                                                        
-                                                        <Grid Margin="0,5,0,0">
-                                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                                            <Button x:Name="Btn_BootUEFI" Grid.Column="0" Content="BOOT TO UEFI BIOS" Background="#333" Foreground="#FF9955" FontWeight="Bold" Height="40" Margin="0,5,5,5" ToolTip="Restarts PC directly into BIOS/UEFI Setup."/>
-                                                            <Button x:Name="Btn_BootRecovery" Grid.Column="1" Content="BOOT TO RECOVERY" Background="#333" Foreground="#FF9955" FontWeight="Bold" Height="40" Margin="5,5,0,5" ToolTip="Restarts PC into Advanced Startup Options."/>
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </Border>
-
-                                                <Border Style="{StaticResource CardBorder}">
-                                                    <StackPanel>
-                                                        <TextBlock Text="NETWORK &amp; SYSTEM" Style="{StaticResource H1}"/>
-                                                        <Button x:Name="Btn_SFC" Content="RUN SFC SCANNOW" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Scans for and fixes corrupt system files."/>
-                                                        <Button x:Name="Btn_DISM" Content="RUN DISM RESTOREHEALTH" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Repairs the Windows System Image."/>
-                                                        <Button x:Name="Btn_NetReset" Content="FLUSH DNS &amp; RESET NETWORK" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Resets winsock and flushes DNS cache."/>
-                                                        <Button x:Name="Btn_WuReset" Content="RESET WINDOWS UPDATES" Background="#522" Foreground="White" Height="40" Margin="0,3" ToolTip="Fixes stuck Windows Updates."/>
-                                                        <Button x:Name="Btn_StoreReset" Content="RESET MICROSOFT STORE" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Re-registers the Windows Store manifest to fix download errors."/>
+                                                        <ContentControl Content="REPAIR" Style="{StaticResource H1}"/>
+                                                        <Button x:Name="Btn_FullRepair" Content="FULL SYSTEM REPAIR (AUTO)" Background="#FF2E3A" Foreground="White" FontWeight="Bold" Height="40" Margin="0,0,0,4" FontFamily="Consolas" ToolTip="Runs DISM RestoreHealth (repairs Windows' file store), then SFC (repairs system files from it), then a CHKDSK scan - Microsoft's recommended order. Each step runs even if the one before finds problems."/>
+                                                        <TextBlock Text="DISM RestoreHealth + SFC + CHKDSK scan" Foreground="#777" FontSize="10" Margin="0,0,0,10"/>
+                                                        <Button x:Name="Btn_SFC" Content="RUN SFC SCANNOW" Style="{StaticResource MBtn}" ToolTip="Scans for and fixes corrupt system files."/>
+                                                        <Button x:Name="Btn_DISM" Content="RUN DISM RESTOREHEALTH" Style="{StaticResource MBtn}" ToolTip="Repairs the Windows System Image."/>
+                                                        <Button x:Name="Btn_NetReset" Content="FLUSH DNS &amp; RESET NETWORK" Style="{StaticResource MBtn}" ToolTip="Resets winsock and flushes DNS cache."/>
+                                                        <Button x:Name="Btn_WuReset" Content="RESET WINDOWS UPDATE" Style="{StaticResource MBtn}" Background="#522" ToolTip="Fixes stuck Windows Updates."/>
+                                                        <Button x:Name="Btn_StoreReset" Content="RESET MICROSOFT STORE" Style="{StaticResource MBtn}" ToolTip="Re-registers the Windows Store manifest to fix download errors."/>
+                                                        <Button x:Name="Btn_VisualCpp" Content="INSTALL VISUAL C++ (DLL ERRORS)" Style="{StaticResource MBtn}" ToolTip="Installs all VC++ Runtimes (2005-2022)."/>
+                                                        <Button x:Name="Btn_GpuReset" Content="RESET GPU DRIVER STACK" Style="{StaticResource MBtn}" Margin="0" ToolTip="Deep Clean: Purges OpenCL/Vulkan/DX Caches and restarts driver instance."/>
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
 
-                                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                            <StackPanel Grid.Column="1">
                                                 <Border Style="{StaticResource CardBorder}">
                                                     <StackPanel>
-                                                        <TextBlock Text="CLEANUP" Style="{StaticResource H1}"/>
-                                                        <Button x:Name="Btn_Reclaim" Content="RECLAIM SPACE (DEEP CLEAN)" Background="#252526" Foreground="#7CFC9A" FontWeight="Bold" Height="40" Margin="0,3" ToolTip="Removes Windows.old and permanently compresses superseded update files (DISM ResetBase). Frees 15-30+ GB on most systems and reports the exact amount. WARNING: currently installed updates can no longer be uninstalled afterward."/>
-                                                        <Button x:Name="Btn_DiskClean" Content="AUTO DISK CLEANUP (SILENT)" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Runs Cleanmgr with all options selected."/>
-                                                        <Button x:Name="Btn_Trim" Content="SSD HEALTH AUDIT &amp; TRIM" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Performs a hardware-level wear audit (Health %) and executes a forced TRIM cycle."/>
-                                                        <Button x:Name="Btn_IconCache" Content="REBUILD ICON CACHE" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Fixes blank or broken desktop icons."/>
-                                                        <Button x:Name="Btn_CleanTemp" Content="CLEAN TEMP FILES" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Deletes temporary files in %TEMP%."/>
-                                                        <Button x:Name="Btn_CleanUpdate" Content="CLEAN OLD UPDATES (DISM)" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Removes obsolete update files from WinSxS."/>
-                                                        <Button x:Name="Btn_Shader" Content="CLEAR DX/GL SHADER CACHE" Background="#252526" Foreground="White" Height="40" Margin="0,3" ToolTip="Clears GPU shader cache.&#x0a;Fixes stutter in some games."/>
+                                                        <ContentControl Content="CLEANUP" Style="{StaticResource H1}"/>
+                                                        <Button x:Name="Btn_Reclaim" Content="RECLAIM SPACE (DEEP CLEAN)" Style="{StaticResource MBtn}" Foreground="#7CFC9A" FontWeight="Bold" ToolTip="Removes Windows.old and permanently compresses superseded update files (DISM ResetBase). Frees 15-30+ GB on most systems and reports the exact amount. WARNING: currently installed updates can no longer be uninstalled afterward."/>
+                                                        <Button x:Name="Btn_DiskClean" Content="AUTO DISK CLEANUP (SILENT)" Style="{StaticResource MBtn}" ToolTip="Runs Disk Cleanup on a safe list: temp files, caches, logs and crash dumps. Never Downloads, the Recycle Bin, Windows.old or the reset image. Reports the space freed."/>
+                                                        <Button x:Name="Btn_Trim" Content="SSD HEALTH AUDIT &amp; TRIM" Style="{StaticResource MBtn}" ToolTip="Performs a hardware-level wear audit (Health %) and executes a forced TRIM cycle."/>
+                                                        <Button x:Name="Btn_IconCache" Content="REBUILD ICON CACHE" Style="{StaticResource MBtn}" ToolTip="Fixes blank or broken desktop icons."/>
+                                                        <Button x:Name="Btn_CleanTemp" Content="CLEAN TEMP FILES" Style="{StaticResource MBtn}" ToolTip="Deletes temporary files in %TEMP%."/>
+                                                        <Button x:Name="Btn_CleanUpdate" Content="CLEAN OLD UPDATES (DISM)" Style="{StaticResource MBtn}" ToolTip="Removes obsolete update files from WinSxS."/>
+                                                        <Button x:Name="Btn_Shader" Content="CLEAR DX/GL SHADER CACHE" Style="{StaticResource MBtn}" Margin="0" ToolTip="Clears GPU shader cache.&#x0a;Fixes stutter in some games."/>
                                                     </StackPanel>
                                                 </Border>
-                                                
+
+                                                <Border Style="{StaticResource CardBorder}">
+                                                    <StackPanel>
+                                                        <ContentControl Content="DIAGNOSTICS &amp; RECOVERY" Style="{StaticResource H1}"/>
+                                                        <UniformGrid Columns="2">
+                                                            <Button x:Name="Btn_RestorePoint" Content="RESTORE POINT" Style="{StaticResource MBtn}" Margin="0,0,3,6" ToolTip="Create a manual system restore checkpoint."/>
+                                                            <Button x:Name="Btn_OpenBackups" Content="LOGS &amp; BACKUPS" Style="{StaticResource MBtn}" Margin="3,0,0,6" ToolTip="Open C:\ProgramData\Ronin (logs, state report, and config snapshots)."/>
+                                                            <Button x:Name="Btn_BootUEFI" Content="BIOS / UEFI" Style="{StaticResource MBtn}" Foreground="#FF9955" FontWeight="Bold" Margin="0,0,3,6" ToolTip="Restarts PC directly into BIOS/UEFI Setup."/>
+                                                            <Button x:Name="Btn_BootRecovery" Content="RECOVERY MENU" Style="{StaticResource MBtn}" Foreground="#FF9955" FontWeight="Bold" Margin="3,0,0,6" ToolTip="Restarts PC into Advanced Startup Options."/>
+                                                        </UniformGrid>
+                                                        <Button x:Name="Btn_BugReport" Content="SAVE BUG REPORT (ZIP)" Style="{StaticResource MBtn}" Foreground="#7FD0FF" FontWeight="Bold" FontFamily="Consolas" Margin="0" ToolTip="Collects every Ronin log into one zip on your Desktop so you can attach it to a bug report. Nothing is uploaded - the file stays on your PC until you send it. Works even if the app has stopped responding."/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2">
+                                                <!-- 7.6: everything Ronin changed on this PC (the applied ledger), each undoable.
+                                                     Rows are built by the controller (Update-ChangesList). -->
+                                                <Border Style="{StaticResource CardBorder}">
+                                                    <StackPanel>
+                                                        <ContentControl Content="CHANGES BY RONIN" Style="{StaticResource H1}"/>
+                                                        <TextBlock x:Name="Txt_ChangesCount" Text="" Foreground="#888" FontSize="11" FontFamily="Consolas" Margin="0,-4,0,6"/>
+                                                        <ScrollViewer Height="250" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                                            <StackPanel x:Name="Pnl_Changes"/>
+                                                        </ScrollViewer>
+                                                        <TextBlock x:Name="Txt_ChangesNote" Text="Changes made before Ronin 7.6 aren't listed here. Undo all changes covers them too." Foreground="#777" FontSize="10" FontFamily="Consolas" TextWrapping="Wrap" Margin="0,8,0,8"/>
+                                                        <Button x:Name="Btn_UndoAll" Content="UNDO ALL CHANGES" Background="#330000" Foreground="#FF5555" Height="34" FontWeight="Bold" FontFamily="Consolas" ToolTip="Expert Mode. Undoes everything Ronin changed on this PC. Settings you chose yourself (WSL, Hyper-V, dark mode and similar) are left alone."/>
+                                                    </StackPanel>
+                                                </Border>
+
                                                 <Border Style="{StaticResource CardBorder}" BorderBrush="#660000" Background="#1A0000">
                                                     <StackPanel>
-                                                        <TextBlock Text="EMERGENCY ZONE" Style="{StaticResource H1}" Foreground="#FF5555"/>
-                                                        <Button x:Name="Btn_InPlaceUpgrade" Content="REINSTALL WINDOWS (IN-PLACE UPGRADE)" Background="#660000" Foreground="#FF9999" Height="45" Margin="0,0,0,8" FontWeight="Bold" FontFamily="Consolas" ToolTip="Opens Microsoft tool to reinstall Windows while keeping your files."/>
-                                                        <Button x:Name="Btn_UndoAll" Content="RESET ALL TWEAKS TO DEFAULT" Background="#330000" Foreground="#FF5555" Height="45" Margin="0,0,0,0" FontWeight="Bold" FontFamily="Consolas" ToolTip="DANGEROUS: Reverts every known registry tweak to Windows Default."/>
+                                                        <ContentControl Content="EMERGENCY ZONE" Style="{StaticResource H1}" Foreground="#FF5555"/>
+                                                        <Button x:Name="Btn_InPlaceUpgrade" Content="REPAIR-INSTALL WINDOWS" Background="#660000" Foreground="#FF9999" Height="38" Margin="0" FontWeight="Bold" FontFamily="Consolas" ToolTip="Opens Microsoft's download page to reinstall Windows while keeping your files."/>
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
                                         </Grid>
+                                    </StackPanel>
+                                </TabItem>
+
+                                <!-- 8.0 DECLUTTER. Appended LAST (index 7) so every existing SelectedIndex stays valid;
+                                     its nav button sits after Privacy Shield. Prefix Dcl_ -> Btn_RunDeclutter. -->
+                                <TabItem x:Name="Tab_Declutter">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Grid.Column="0" Style="{StaticResource CardBorder}">
+                                                <StackPanel>
+                                                    <ContentControl Content="ADS &amp; SUGGESTIONS" Style="{StaticResource H1}"/>
+                                                    <CheckBox x:Name="Dcl_StartRecs" Content="Hide Start Recommendations"/>
+                                                    <CheckBox x:Name="Dcl_RecentItems" Content="Hide Recent Files"/>
+                                                    <CheckBox x:Name="Dcl_SearchHighlights" Content="Disable Search Highlights"/>
+                                                    <CheckBox x:Name="Dcl_AccountNags" Content="Hide Account Nags in Start"/>
+                                                    <CheckBox x:Name="Dcl_SettingsTips" Content="No Suggestions in Settings"/>
+                                                    <CheckBox x:Name="Dcl_WelcomeExp" Content="No Post-Update 'Welcome'"/>
+                                                    <CheckBox x:Name="Dcl_LockTips" Content="No Lock Screen Tips"/>
+                                                    <CheckBox x:Name="Dcl_SpotlightIcon" Content="Hide Spotlight Desktop Icon"/>
+                                                    <CheckBox x:Name="Dcl_EdgeNags" Content="Quiet Microsoft Edge"/>
+
+                                                    <ContentControl Content="QUALITY OF LIFE" Style="{StaticResource H1}" Margin="0,10,0,8"/>
+                                                    <CheckBox x:Name="Dcl_BatteryPct" Content="Show Battery Percentage"/>
+                                                    <CheckBox x:Name="Dcl_Scrollbars" Content="Always Show Scrollbars"/>
+                                                    <CheckBox x:Name="Dcl_NumLock" Content="Num Lock On at Startup"/>
+                                                    <CheckBox x:Name="Dcl_DefaultPrinter" Content="Keep My Default Printer"/>
+                                                    <CheckBox x:Name="Dcl_FolderDiscovery" Content="Stop Folder Type Guessing"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="1" Style="{StaticResource CardBorder}">
+                                                <StackPanel>
+                                                    <ContentControl Content="SYSTEM BEHAVIOUR" Style="{StaticResource H1}"/>
+                                                    <CheckBox x:Name="Dcl_LongPaths" Content="Allow Long File Paths"/>
+                                                    <CheckBox x:Name="Dcl_VerboseLogon" Content="Detailed Startup Messages"/>
+                                                    <CheckBox x:Name="Dcl_LogonBlur" Content="Clear Sign-in Background"/>
+
+                                                    <!-- 8.0 Black Ice: was a bluish box with blue / red / green buttons (the 7.x colours of the
+                                                         dialogs they open); now the shared section tag and outline buttons. -->
+                                                    <ContentControl Content="APPS" Style="{StaticResource H1}" Margin="0,16,0,10"/>
+                                                    <Button x:Name="Btn_StartupApps" Content="STARTUP APPS" Style="{StaticResource GhostBtn}" FontSize="12" Height="36" Margin="0,0,0,6" ToolTip="See every app that starts with Windows and switch each one on or off. Uses the same switch as Task Manager's Startup tab, so it's always reversible - nothing is deleted."/>
+                                                    <Button x:Name="Btn_DebloatDcl" Content="DEBLOAT CENTER" Style="{StaticResource GhostBtn}" FontSize="12" Height="36" Margin="0,0,0,6" ToolTip="Scans the apps installed on THIS machine and opens a selectable removal menu - junk pre-selected, nothing removed until you confirm. Same as the button on System Core."/>
+                                                    <Button x:Name="Btn_InstallApps" Content="INSTALL APPS" Style="{StaticResource GhostBtn}" FontSize="12" Height="36" ToolTip="Pick apps from a checked list (browsers, game launchers, tools, runtimes) and install them silently with winget, Microsoft's package manager. The only Ronin feature that uses the internet - and only after you confirm."/>
+
+
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                                                <StackPanel>
+                                                    <ContentControl Content="WINDOWS UPDATE" Style="{StaticResource H1}"/>
+                                                    <Border Background="#0E0E0E" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="3" Padding="8,6" Margin="0,0,0,8">
+                                                        <TextBlock x:Name="Txt_WuStatus" Text="Checking update status..." Foreground="#9A9A9A" FontSize="11" FontFamily="Consolas" TextWrapping="Wrap"/>
+                                                    </Border>
+                                                    <CheckBox x:Name="Dcl_WU_NoRestart" Content="No Surprise Restarts"/>
+                                                    <CheckBox x:Name="Dcl_WU_Pause" Content="Pause Updates (5 Weeks)"/>
+                                                    <CheckBox x:Name="Dcl_WU_Off" Content="Turn Updates Off" Foreground="#FFAA00"/>
+                                                    <TextBlock Text="Ronin uses Windows' own pause, so 'Resume updates' in Settings always works. Turning updates off needs Expert Mode." Foreground="#666" FontSize="10" FontFamily="Consolas" TextWrapping="Wrap" Margin="0,8,0,0"/>
+
+                                                    <ContentControl Content="WINDOWS TOOLS" Style="{StaticResource H1}" Margin="0,14,0,6"/>
+                                                    <UniformGrid Columns="2">
+                                                        <Button x:Name="Tool_Control" Content="CONTROL PANEL" Tag="control.exe" Style="{StaticResource ToolBtn}" ToolTip="The classic Control Panel."/>
+                                                        <Button x:Name="Tool_Devices" Content="DEVICE MANAGER" Tag="devmgmt.msc" Style="{StaticResource ToolBtn}" ToolTip="Drivers and hardware."/>
+                                                        <Button x:Name="Tool_Network" Content="NETWORK" Tag="ncpa.cpl" Style="{StaticResource ToolBtn}" ToolTip="Network adapters (the classic Network Connections window)."/>
+                                                        <Button x:Name="Tool_Power" Content="POWER PLANS" Tag="powercfg.cpl" Style="{StaticResource ToolBtn}" ToolTip="Classic Power Options."/>
+                                                        <Button x:Name="Tool_Sound" Content="SOUND" Tag="mmsys.cpl" Style="{StaticResource ToolBtn}" ToolTip="Classic Sound panel: playback and recording devices."/>
+                                                        <Button x:Name="Tool_Programs" Content="PROGRAMS" Tag="appwiz.cpl" Style="{StaticResource ToolBtn}" ToolTip="Classic Programs and Features (uninstall)."/>
+                                                        <Button x:Name="Tool_Services" Content="SERVICES" Tag="services.msc" Style="{StaticResource ToolBtn}" ToolTip="Windows services."/>
+                                                        <Button x:Name="Tool_Disks" Content="DISK MGMT" Tag="diskmgmt.msc" Style="{StaticResource ToolBtn}" ToolTip="Disk Management: partitions and drive letters."/>
+                                                        <Button x:Name="Tool_Events" Content="EVENT VIEWER" Tag="eventvwr.msc" Style="{StaticResource ToolBtn}" ToolTip="Windows logs - where crashes and errors are recorded."/>
+                                                        <Button x:Name="Tool_SysProps" Content="SYSTEM PROPS" Tag="sysdm.cpl" Style="{StaticResource ToolBtn}" ToolTip="System Properties: performance options, page file, restore, computer name."/>
+                                                    </UniformGrid>
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                        <Button x:Name="Btn_RunDeclutter" Content="APPLY / REVERT DECLUTTER TWEAKS" Style="{StaticResource ApplyBtn}" Margin="0,15,0,0"/>
                                     </StackPanel>
                                 </TabItem>
                             </TabControl>
                         </Grid>
                     </Viewbox>
                     
-                    <Grid x:Name="Banner_Reboot" Grid.Row="1" Background="#E6B800" Height="28" Visibility="Collapsed">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <TextBlock Text="&#xE7E7;" FontFamily="Segoe MDL2 Assets" Foreground="Black" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="BannerText" Text="RESTART REQUIRED - SYSTEM REBOOT PENDING" Foreground="Black" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" FontFamily="Consolas"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Border Grid.Row="2" Background="#0C0C0C" BorderBrush="#222" BorderThickness="0,1,0,0" Padding="15,8" CornerRadius="0,0,8,0">
-                        <Grid>
-                            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,4">
-                                    <Rectangle Width="6" Height="6" Fill="#00FF00" VerticalAlignment="Center" Margin="0,0,6,0" RadiusX="2" RadiusY="2">
-                                        <Rectangle.Effect><DropShadowEffect Color="#00FF00" BlurRadius="5" ShadowDepth="0" Opacity="0.5"/></Rectangle.Effect>
-                                    </Rectangle>
-                                    <TextBlock Text="GREEN = OPTIMIZED" FontSize="9" FontWeight="Bold" Foreground="#444" VerticalAlignment="Center" FontFamily="Consolas"/>
-                                </StackPanel>
-                                
+                    <StackPanel Grid.Row="1">
+                        <Grid x:Name="Banner_Reboot" Background="#E6B800" Height="28" Visibility="Collapsed">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="&#xE7E7;" FontFamily="Segoe MDL2 Assets" Foreground="Black" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="BannerText" Text="RESTART REQUIRED - SYSTEM REBOOT PENDING" Foreground="Black" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" FontFamily="Consolas"/>
                             </StackPanel>
+                        </Grid>
 
-                            <StackPanel>
-                                <TextBlock Text="INFORMATION DOJO" FontSize="9" FontWeight="Bold" Foreground="#444" Margin="0,0,0,3" FontFamily="Consolas"/>
-                                <TextBlock x:Name="InfoDojo" Text="Hover over any tweak to learn more..." FontSize="12" Foreground="#00FF00" TextWrapping="Wrap" Height="25" FontFamily="Consolas"/>
+                        <!-- Engine watchdog. Shown by a UI-thread DispatcherTimer when the engine's
+                             liveness beat ($SyncHash.LastBeat) goes stale. Informational only: it
+                             never acts on its own, and it auto-hides the moment beats resume. -->
+                        <Grid x:Name="Banner_Engine" Background="#8B1A1A" MinHeight="30" Visibility="Collapsed">
+                            <!-- 8.0: icon | message (wraps) | buttons. A horizontal StackPanel pushed the buttons off-screen at the 800 px MinWidth (banners are outside the scaling Viewbox). -->
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,4">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" Foreground="#FFD0D0" Margin="0,0,10,0" Grid.Column="0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="EngineBannerText" Text="ENGINE NOT RESPONDING" Foreground="White" FontWeight="Bold" FontSize="11" Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center" FontFamily="Consolas"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                                    <Button x:Name="Btn_EngineBugReport" Content="SAVE BUG REPORT" Padding="10,2" Background="#3A0000" Foreground="White" BorderBrush="#FF9999" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand"/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+
+                        <!-- 7.6: tweaks Ronin applied that something (usually a Windows update) undid.
+                             Shown after the first startup audit; nothing changes until a button is clicked. -->
+                        <Grid x:Name="Banner_Reset" Background="#2E2400" MinHeight="34" Visibility="Collapsed">
+                            <!-- 8.0: icon | message (wraps) | buttons. A horizontal StackPanel pushed the buttons off-screen at the 800 px MinWidth (banners are outside the scaling Viewbox). -->
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,4">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="&#xE895;" FontFamily="Segoe MDL2 Assets" Foreground="#FFCF5C" Margin="0,0,10,0" Grid.Column="0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="ResetBannerText" Text="A Windows update undid some of your tweaks." Foreground="#FFE7A8" FontSize="11" FontWeight="Bold" FontFamily="Consolas" Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                                    <Button x:Name="Btn_ResetReapply" Content="RE-APPLY" Padding="10,2" Background="#4A3A00" Foreground="White" BorderBrush="#FFCF5C" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand" ToolTip="Put these tweaks back on now."/>
+                                    <Button x:Name="Btn_ResetShow" Content="SHOW ME" Margin="6,0,0,0" Padding="10,2" Background="Transparent" Foreground="#FFE7A8" BorderBrush="#7A6420" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand" ToolTip="List them in the console and open the changes list in Maintenance."/>
+                                    <Button x:Name="Btn_ResetKeep" Content="KEEP IT MY WAY" Margin="6,0,0,0" Padding="10,2" Background="Transparent" Foreground="#FFE7A8" BorderBrush="#7A6420" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand" ToolTip="Leave them off. Ronin forgets it applied them and won't mention them again."/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+
+                        <!-- 8.0: "Turn Updates Off" reminder - shown at startup once updates have been off for
+                             30 days (Test-UpdatesReminderDue). Nothing changes until a button is clicked. -->
+                        <Grid x:Name="Banner_Updates" Background="#331A00" MinHeight="34" Visibility="Collapsed">
+                            <!-- 8.0: icon | message (wraps) | buttons. A horizontal StackPanel pushed the buttons off-screen at the 800 px MinWidth (banners are outside the scaling Viewbox). -->
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,4">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="&#xE7BA;" FontFamily="Segoe MDL2 Assets" Foreground="#FFB060" Margin="0,0,10,0" Grid.Column="0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="UpdatesBannerText" Text="Windows updates have been off for a while." Foreground="#FFD9B0" FontSize="11" FontWeight="Bold" FontFamily="Consolas" Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                                    <Button x:Name="Btn_UpdatesOn" Content="TURN BACK ON" Padding="10,2" Background="#4A2A00" Foreground="White" BorderBrush="#FFB060" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand" ToolTip="Resume Windows Update now (reverts Turn Updates Off)."/>
+                                    <Button x:Name="Btn_UpdatesSnooze" Content="REMIND ME IN 30 DAYS" Margin="6,0,0,0" Padding="10,2" Background="Transparent" Foreground="#FFD9B0" BorderBrush="#7A5020" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand" ToolTip="Keep updates off and ask again in 30 days."/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+
+                        <!-- 7.6: "Ask me first" Explorer setting. The engine never prompts (no modals from the
+                             engine), so a finished batch shows this instead of restarting Explorer itself. -->
+                        <Grid x:Name="Banner_Explorer" Background="#1C2433" MinHeight="32" Visibility="Collapsed">
+                            <!-- 8.0: icon | message (wraps) | buttons. A horizontal StackPanel pushed the buttons off-screen at the 800 px MinWidth (banners are outside the scaling Viewbox). -->
+                            <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10,4">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="&#xE72C;" FontFamily="Segoe MDL2 Assets" Foreground="#9CC4FF" Margin="0,0,10,0" Grid.Column="0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Restart Explorer to finish your taskbar, Start and Explorer changes." Foreground="#D6E6FF" FontSize="11" FontWeight="Bold" FontFamily="Consolas" Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                                    <Button x:Name="Btn_ExplorerNow" Content="RESTART EXPLORER" Padding="10,2" Background="#2A3A55" Foreground="White" BorderBrush="#9CC4FF" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand" ToolTip="The taskbar and open folders blink for a second."/>
+                                    <Button x:Name="Btn_ExplorerLater" Content="LATER" Margin="6,0,0,0" Padding="10,2" Background="Transparent" Foreground="#D6E6FF" BorderBrush="#3A4A66" BorderThickness="1" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Cursor="Hand" ToolTip="The change shows after you next sign in."/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </StackPanel>
+
+                    <Border Grid.Row="2" BorderBrush="#14181D" BorderThickness="0,1,0,0" Padding="26,7,22,7" Background="#EB06070A">
+                        <!-- 8.0 Black Ice info panel: "INFO DOJO // label" and the registry value it writes on one line,
+                             then up to 3 lines of description ('...' past that; the hover tooltip has it all). -->
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" BorderBrush="{StaticResource Accent}" BorderThickness="2,0,0,0" Padding="12,1,10,1">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#17FF2E3A" Offset="0"/><GradientStop Color="#00FF2E3A" Offset="0.5"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="INFO DOJO" FontFamily="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource Accent}"/>
+                                        <TextBlock Grid.Column="1" Text=" // " FontFamily="{StaticResource Mono}" FontSize="9.5" Foreground="#5C6570"/>
+                                        <TextBlock x:Name="Txt_DojoTitle" Grid.Column="2" Text="HOVER A TWEAK" FontFamily="{StaticResource Mono}" FontSize="9.5" Foreground="#E6EAEE" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock x:Name="Txt_DojoReg" Grid.Column="3" Text="" MaxWidth="420" FontFamily="{StaticResource Mono}" FontSize="9.5" Foreground="#8FB8DE" TextTrimming="CharacterEllipsis" Margin="12,0,0,0"/>
+                                    </Grid>
+                                    <TextBlock x:Name="InfoDojo" Text="Hover over any tweak to learn more..." FontSize="12" LineHeight="14.5" LineStackingStrategy="BlockLineHeight" Foreground="#7D8692" TextWrapping="Wrap" TextTrimming="WordEllipsis" Height="44" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                    <Border Width="16" Height="8" BorderBrush="#FF2E3A" BorderThickness="1" Background="{StaticResource OnFill}" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="ON" FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                    <Border Width="16" Height="8" BorderBrush="#F2A93B" BorderThickness="1" Background="{StaticResource HazardAmber}" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="QUEUED" FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="16" Height="8" BorderBrush="#2E343C" BorderThickness="1" Background="#090B0E" Margin="0,0,7,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="OFF" FontFamily="{StaticResource Mono}" FontSize="9" Foreground="#7D8692"/>
+                                </StackPanel>
                             </StackPanel>
                         </Grid>
                     </Border>
-                    
-                    <!-- TOP-RIGHT TOOLBAR: Profile bar + Restart Explorer -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,22,25,0">
-<Button x:Name="Btn_RestartExp" Content="RESTART EXPLORER" Background="Transparent" Foreground="#666" BorderThickness="1" BorderBrush="#333" Padding="10,5" Cursor="Hand" FontFamily="Consolas" Height="32">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="Bdr" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="4">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bdr" Property="BorderBrush" Value="#FF2E2E"/>
-                                        <Setter Property="Foreground" Value="#FF2E2E"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                    </StackPanel>
                 </Grid>
             </Grid>
+
+            <!-- 8.0 ENGINE LOG drawer: the full console, opened from the status bar's LOG button (Esc or X closes). -->
+            <Border x:Name="LogPanel" Grid.Row="1" Visibility="Collapsed" VerticalAlignment="Bottom" Height="240" Margin="236,0,0,0" Background="#FA040507" BorderBrush="#FF2E3A" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Grid Margin="16,4,4,2">
+                        <TextBlock Text="ENGINE LOG" FontFamily="{StaticResource Mono}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource Accent}" VerticalAlignment="Center"/>
+                        <Button x:Name="Btn_LogClose" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" FontSize="10" Style="{StaticResource WindowControlBtn}" Height="24" Width="32" HorizontalAlignment="Right" ToolTip="Close the log (Esc)"/>
+                    </Grid>
+                    <ScrollViewer x:Name="ConsoleScroll" Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="16,0,10,10">
+                        <TextBlock x:Name="ConsoleOutput" Text="&gt; RONIN ENGINE ONLINE..." Foreground="#7FD9A0" FontFamily="{StaticResource Mono}" FontSize="11" LineHeight="16" TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+            <!-- 7.6 SETTINGS: slide-over panel. Last child of the root grid's content row, so it draws over
+                 the nav and tabs but not the title bar (the gear stays clickable to close it). A panel,
+                 not a window: it can never open behind Ronin, and nothing here is modal. -->
+            <Grid x:Name="SettingsOverlay" Grid.Row="1" Visibility="Collapsed">
+                <Border x:Name="SettingsScrim" Background="#99000000" CornerRadius="0,0,8,8"/>
+                <Border x:Name="SettingsPanel" HorizontalAlignment="Right" Width="380" Background="#121212" BorderBrush="#FF2E3A" BorderThickness="1,0,0,0" CornerRadius="0,0,8,0">
+                    <Border.RenderTransform><TranslateTransform X="0"/></Border.RenderTransform>
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Margin="20,14,8,6">
+                            <ContentControl Content="SETTINGS" Style="{StaticResource H1}" Margin="0" VerticalAlignment="Center"/>
+                            <Button x:Name="Btn_SettingsClose" Content="&#xE8BB;" FontFamily="Segoe MDL2 Assets" Style="{StaticResource WindowControlBtn}" HorizontalAlignment="Right" ToolTip="Close settings (Esc)"/>
+                        </Grid>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="20,4,20,20">
+
+                                <ContentControl Content="STARTUP" Style="{StaticResource H1}" FontSize="12" Margin="0,10,0,8"/>
+                                <TextBlock Text="Open Ronin on" Foreground="#CCC" FontSize="12" FontFamily="Consolas" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="Set_StartTab" Height="34" Style="{StaticResource DarkComboStyle}" FontSize="12">
+                                    <ComboBoxItem Tag="smart" Content="Handheld on handhelds, otherwise Auto Optimize"/>
+                                    <ComboBoxItem Tag="last" Content="The tab I used last"/>
+                                    <ComboBoxItem Tag="Tab_Auto" Content="Auto Optimize"/>
+                                    <ComboBoxItem Tag="Tab_System" Content="System Core"/>
+                                    <ComboBoxItem Tag="Tab_Gaming" Content="Gaming &amp; GPU"/>
+                                    <ComboBoxItem Tag="Tab_Handheld" Content="Handheld"/>
+                                    <ComboBoxItem Tag="Tab_Privacy" Content="Privacy Shield"/>
+                                    <ComboBoxItem Tag="Tab_Declutter" Content="Declutter"/>
+                                    <ComboBoxItem Tag="Tab_Advanced" Content="Advanced Tools"/>
+                                    <ComboBoxItem Tag="Tab_Maint" Content="Maintenance"/>
+                                </ComboBox>
+                                <CheckBox x:Name="Set_ResetAlert" Content="Warn me if Windows undoes tweaks" ToolTip="After a Windows update or another app turns off tweaks Ronin applied, show a banner offering to re-apply them." Margin="0,12,0,0"/>
+
+                                <ContentControl Content="SAFETY" Style="{StaticResource H1}" FontSize="12" Margin="0,22,0,8"/>
+                                <CheckBox x:Name="Set_Preview" Content="Preview changes before applying"/>
+                                <TextBlock Text="Apply asks for a second click and lists what will change in the console." Foreground="#777" FontSize="11" FontFamily="Consolas" TextWrapping="Wrap" Margin="26,2,0,12"/>
+                                <TextBlock Text="After Gallery or Home changes, restart Explorer" Foreground="#CCC" FontSize="12" FontFamily="Consolas" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="Set_ExplorerRestart" Height="34" Style="{StaticResource DarkComboStyle}" FontSize="12">
+                                    <ComboBoxItem Tag="auto" Content="Automatically"/>
+                                    <ComboBoxItem Tag="ask" Content="Only when I click a button"/>
+                                </ComboBox>
+
+                                <ContentControl Content="DIAGNOSTICS" Style="{StaticResource H1}" FontSize="12" Margin="0,22,0,8"/>
+                                <Button x:Name="Btn_SetBugReport" Content="SAVE BUG REPORT" Background="#252526" Foreground="#7FD0FF" Height="36" FontWeight="Bold" FontFamily="Consolas" Margin="0,0,0,6"/>
+                                <Button x:Name="Btn_SetOpenLogs" Content="OPEN LOGS FOLDER" Background="#252526" Foreground="White" Height="36" FontFamily="Consolas" Margin="0,0,0,6"/>
+                                <Button x:Name="Btn_SetReset" Content="RESET RONIN'S SETTINGS" Background="#252526" Foreground="#FF9999" Height="36" FontFamily="Consolas"/>
+                                <TextBlock Text="Resets these preferences only. Your tweaks are not changed." Foreground="#777" FontSize="11" FontFamily="Consolas" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
+                                <TextBlock Text="Expert Mode, Touch Mode and Auto-Backup keep their setting between launches." Foreground="#888" FontSize="11" FontFamily="Consolas" TextWrapping="Wrap" Margin="0,22,0,0"/>
+                                <TextBlock x:Name="Txt_SettingsPath" Text="" Foreground="#555" FontSize="10" FontFamily="Consolas" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </DockPanel>
+                </Border>
+            </Grid>
+
+            <!-- 8.0 STATUS BAR: the console's newest line (the caret blinks while the engine works), the open tab,
+                 live CPU / RAM and the Windows build. LOG opens the full console. -->
+            <Grid x:Name="StatusBar" Grid.Row="2" Background="#F2040507">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Rectangle Grid.ColumnSpan="4" Height="1" VerticalAlignment="Top" Fill="#14181D"/>
+                <Grid Grid.Column="0" Panel.ZIndex="2">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="{StaticResource Accent}" CornerRadius="0,0,0,7"/>
+                    <Path Grid.Column="1" Stretch="Fill" Fill="{StaticResource Accent}" Data="M0,0 L10,13 L0,26 Z"/>
+                    <TextBlock Text="RONIN" FontFamily="{StaticResource Mono}" FontSize="10.5" FontWeight="Bold" Foreground="#12030A" VerticalAlignment="Center" Margin="12,0,8,0"/>
+                </Grid>
+                <Grid Grid.Column="1" Margin="-10,0,0,0" Panel.ZIndex="1">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#1A1E24"/>
+                    <Path Grid.Column="1" Stretch="Fill" Fill="#1A1E24" Data="M0,0 L10,13 L0,26 Z"/>
+                    <TextBlock x:Name="Txt_StatusTab" Text="~/auto" Style="{StaticResource StatusText}" Foreground="#C9D0D7" Margin="20,0,6,0"/>
+                </Grid>
+                <TextBlock x:Name="Status_Msg" Grid.Column="2" Margin="12,0,12,0" Style="{StaticResource StatusText}" TextTrimming="CharacterEllipsis" Cursor="Hand" ToolTip="Click to show the full log"><Run x:Name="Txt_ConsoleLast" Text="ronin engine online" Foreground="#7FD9A0"/><InlineUIContainer BaselineAlignment="Center"><Rectangle x:Name="Status_Caret" Width="7" Height="12" Fill="#7FD9A0" Margin="7,0,0,0"/></InlineUIContainer></TextBlock>
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <TextBlock Text="CPU " Style="{StaticResource StatusText}"/>
+                    <TextBlock x:Name="Txt_CpuStatus" Text="..." Style="{StaticResource StatusText}" Foreground="#C9D0D7" MaxWidth="170" TextTrimming="CharacterEllipsis" Margin="0,0,14,0"/>
+                    <TextBlock Text="RAM " Style="{StaticResource StatusText}"/>
+                    <TextBlock x:Name="Txt_RamStatus" Text="..." Style="{StaticResource StatusText}" Foreground="#C9D0D7" Margin="0,0,7,0"/>
+                    <Grid Width="40" Height="4" VerticalAlignment="Center" Margin="0,0,14,0" Background="#1A1E24">
+                        <Rectangle x:Name="Bar_Ram" Width="0" HorizontalAlignment="Left" Fill="#C9D0D7"/>
+                    </Grid>
+                    <TextBlock Text="BUILD " Style="{StaticResource StatusText}"/>
+                    <TextBlock x:Name="Txt_Build" Text="" Style="{StaticResource StatusText}" Foreground="#C9D0D7" Margin="0,0,12,0"/>
+                    <Button x:Name="Btn_Log" Content="&#x25B4; LOG" Style="{StaticResource GhostBtn}" Height="18" FontSize="9.5" Padding="8,0" ToolTip="Show the full engine log"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- 8.0 CRT finish: faint scanlines + vignette over everything. Never hit-testable, never animated. -->
+            <Rectangle x:Name="Fx_Scanlines" Grid.RowSpan="3" IsHitTestVisible="False" RadiusX="8" RadiusY="8">
+                <Rectangle.Fill>
+                    <DrawingBrush TileMode="Tile" Viewport="0,0,4,3" ViewportUnits="Absolute" Viewbox="0,0,4,3" ViewboxUnits="Absolute">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Brush="#00000000"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,4,3"/></GeometryDrawing.Geometry></GeometryDrawing>
+                                <GeometryDrawing Brush="#08FFFFFF"><GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,4,1"/></GeometryDrawing.Geometry></GeometryDrawing>
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Rectangle x:Name="Fx_Vignette" Grid.RowSpan="3" IsHitTestVisible="False" RadiusX="8" RadiusY="8">
+                <Rectangle.Fill>
+                    <RadialGradientBrush Center="0.5,0.45" GradientOrigin="0.5,0.45" RadiusX="0.75" RadiusY="0.72">
+                        <GradientStop Color="#00000000" Offset="0.7"/><GradientStop Color="#55000000" Offset="1"/>
+                    </RadialGradientBrush>
+                </Rectangle.Fill>
+            </Rectangle>
         </Grid>
     </Border>
 </Window>

@@ -1,5 +1,5 @@
 # ==============================================================================
-# Project Ronin - Online Bootstrapper v7.3.1
+# Project Ronin - Online Bootstrapper v8.0.0
 # https://github.com/keiretrogaming/Project-Ronin
 #
 # Downloads the latest monolithic Ronin.ps1 from the official GitHub repository
@@ -46,6 +46,7 @@ Write-Host '[+] Download complete.' -ForegroundColor Green
 Write-Host '[*] Launching Ronin...' -ForegroundColor Cyan
 Write-Host ''
 
-# Launch with proper elevation
+# Launch with proper elevation. Minimised, not hidden: the console stays on the taskbar, but its
+# startup text no longer sits on top of Ronin looking like a status message.
 $psArgs = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $DownloadPath)
-Start-Process -FilePath 'powershell.exe' -ArgumentList $psArgs -Verb RunAs
+Start-Process -FilePath 'powershell.exe' -ArgumentList $psArgs -Verb RunAs -WindowStyle Minimized
